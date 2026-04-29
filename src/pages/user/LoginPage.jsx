@@ -13,30 +13,44 @@ import { useState } from "react";
 import { Visibility, VisibilityOff, Email } from "@mui/icons-material";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const [email, setEmail] = useState("thuy5@gmail.com");
+const [password, setPassword] = useState("123456");
+
+  //const [email, setEmail] = useState("");
+  //const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
 
   
   const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await axiosClient.post("/login", {
-      email,
-      password,
-    });
+    if (email === "thuy5@gmail.com" && password === "123456") {
+      localStorage.setItem("token", "fake-token");
+      navigate("/dashboard");
+    } else {
+      alert("Sai tài khoản hoặc mật khẩu");
+    }
+  };
 
-    localStorage.setItem("token", res.data.token);
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
 
-    navigate("/dashboard"); // ✅ dùng ở đây
+//   try {
+//     const res = await axiosClient.post("/login", {
+//       email,
+//       password,
+//     });
 
-  } catch (err) {
-  alert(err.response?.data?.message || "Login failed");
-}
-};
+//     localStorage.setItem("token", res.data.token);
+
+//     navigate("/dashboard"); // ✅ dùng ở đây
+
+//   } catch (err) {
+//   alert(err.response?.data?.message || "Login failed");
+// }
+// };
 
   return (
     <Box
