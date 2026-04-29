@@ -8,7 +8,7 @@ const Dashboard = () => {
   const [keyword, setKeyword] = useState("");
 
   const data = [
-    { name: "Sân A", location: "Hà Nội", image: "https://picsum.photos/400/200?1" },
+    { name: "Sân A", location: "Hà Nội", image: "https://picsum.photos/400/200?1", time:"05:00 - 24:00", rating:"4.9" },
     { name: "Sân B", location: "HCM", image: "https://picsum.photos/400/200?2" },
 
     { name: "Sân C", location: "Đà Nẵng", image: "https://picsum.photos/400/200?3" },
@@ -63,7 +63,7 @@ const Dashboard = () => {
         sx={{
           height: "calc(100vh - 140px)", // trừ header + bottom nav
           overflowY: "auto",
-          px: 2,
+          px: 16,
           pb: 2,
           pt: 3,
         }}
