@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -28,9 +29,9 @@ const Header = () => {
         background: "linear-gradient(135deg, #2272af, #0eb94d)",
         color: "white",
         px: 4,
-        p : 4,
-        pr : 6,
-        pl : 6,
+        p: 4,
+        pr: 6,
+        pl: 6,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -45,8 +46,8 @@ const Header = () => {
         sx={{
           fontSize: shrink ? 24 : 26, // 👈 chữ nhỏ lại
           transition: "0.3s",
-          color: "white", 
-          cursor: "pointer" 
+          color: "white",
+          cursor: "pointer"
         }}
       >
         Sport Booking
@@ -59,11 +60,22 @@ const Header = () => {
           flexDirection: "row", // 👈 ép ngang
           gap: 4,
           alignItems: "center",
-          
-          
+
+
         }}
       >
-        <Typography sx={{fontSize: 18, color: "white", cursor: "pointer" }}>
+        <Typography
+          component={Link}
+          to="/dashboard"
+          sx={{
+            fontSize: 18,
+            color: "white",
+            cursor: "pointer",
+            textDecoration: "none",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
           Trang chủ
         </Typography>
         <Typography sx={{ fontSize: 18, color: "white", cursor: "pointer" }}>
@@ -83,14 +95,14 @@ const Header = () => {
       {/* BUTTON */}
       <Box display="flex" gap={2}>
         <Button
-          
+
           variant="contained"
           sx={{
             height: shrink ? 30 : 34,
             transition: "0.3s",
             textTransform: "none",
             mr: 2,
-            background:"#2272af !important",
+            background: "#2272af !important",
             "&:hover": {
               background: "#0b5ea8 !important",
             },
@@ -102,7 +114,7 @@ const Header = () => {
         </Button>
 
         <Button
-         
+
           variant="outlined"
           sx={{
             height: shrink ? 30 : 34,
@@ -110,7 +122,7 @@ const Header = () => {
             borderColor: "white",
             transition: "0.3s",
             textTransform: "none",
-            background:"#2272af !important",
+            background: "#2272af !important",
             "&:hover": {
               background: "#0b5ea8 !important",
             },
