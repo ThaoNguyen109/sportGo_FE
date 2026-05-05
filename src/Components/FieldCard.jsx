@@ -11,8 +11,8 @@ import {
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import StarIcon from "@mui/icons-material/Star";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const FieldCard = ({
   name,
@@ -23,7 +23,10 @@ const FieldCard = ({
   time = "00:00 - 24:00",
   type = "Đơn ngày",
 }) => {
+
   const [liked, setLiked] = useState(false);
+
+  const navigate = useNavigate();   // ✅ phải nằm trong component
 
   return (
     <Card
@@ -31,13 +34,11 @@ const FieldCard = ({
         borderRadius: 3,
         overflow: "hidden",
         boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-        overflow: "hidden",
         "&:hover": {
           transform: "translateY(-4px)",
           transition: "0.3s",
           boxShadow: "0 12px 25px rgba(0,0,0,0.2)",
         }
-
       }}
     >
       {/* ẢNH + BADGE */}
@@ -103,58 +104,58 @@ const FieldCard = ({
 
       {/* CONTENT */}
       <CardContent
-  sx={{
-    py: 1,
-    px: 1.2,
-    "&:last-child": { pb: 1 },
-  }}
->
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center", // 👈 căn giữa theo chiều dọc
-    }}
-  >
-    {/* 👉 LEFT */}
-    <Box>
-      <Typography fontWeight="bold" fontSize={13}>
-        {name}
-      </Typography>
+        sx={{
+          py: 1,
+          px: 1.2,
+          "&:last-child": { pb: 1 },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          {/* LEFT */}
+          <Box>
+            <Typography fontWeight="bold" fontSize={13}>
+              {name}
+            </Typography>
 
-      <Typography fontSize={11} color="gray">
-        ({distance}) {location}
-      </Typography>
+            <Typography fontSize={11} color="gray">
+              ({distance}) {location}
+            </Typography>
 
-      <Typography fontSize={11} color="gray">
-        🕒 {time}
-      </Typography>
-    </Box>
+            <Typography fontSize={11} color="gray">
+              🕒 {time}
+            </Typography>
+          </Box>
 
-    {/* 👉 RIGHT */}
-    <Button
-      variant="outlined"
-      color="inherit"
-      size="small"
-      sx={{
-        py: 0.4,
-        px: 1.5,
-        borderRadius: 2,
-        fontSize: 14,
-        textTransform: "none",
-        minWidth: "auto",
-        height: 28, // 👈 giữ button gọn
-        background: "#18643b !important",
-        color: "white",
-        "&:hover": {
-          background: "#14532d !important",
-        },
-      }}
-    >
-      Đặt lịch
-    </Button>
-  </Box>
-</CardContent>
+          {/* RIGHT */}
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => navigate("/booking")}   // ✅ chuyển sang trang đặt sân
+            sx={{
+              py: 0.4,
+              px: 1.5,
+              borderRadius: 2,
+              fontSize: 14,
+              textTransform: "none",
+              minWidth: "auto",
+              height: 28,
+              background: "#18643b",
+              "&:hover": {
+                background: "#14532d",
+              },
+            }}
+          >
+            Đặt lịch
+          </Button>
+
+        </Box>
+      </CardContent>
 
     </Card>
   );
