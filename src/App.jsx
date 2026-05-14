@@ -1,8 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import './index.css';
 
-import LoginPage from "./pages/user/LoginPage";
+import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/user/Dashboard";
+import DashboardOwner from "./pages/owner/DashboardOwner";
+import BookingManager from "./pages/owner/BookingManager";
+import VenueDetail from "./pages/owner/VenueDetail/VenueDetail";
+
+
+
+
 
 function App() {
   return (
@@ -13,6 +20,12 @@ function App() {
 
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/owner" element={<DashboardOwner />} />
+
+        <Route path="/owner/bookings" element={<BookingManager />} />
+        <Route path="/owner/venues/:id" element={<VenueDetail />} />
+
+
       </Routes>
     </BrowserRouter>
   );

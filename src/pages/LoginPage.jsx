@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
+import axiosClient from "../api/axiosClient";
 import {
   Box,
   Button,
@@ -23,34 +23,52 @@ const [password, setPassword] = useState("123456");
   
   const navigate = useNavigate();
 
+  // code giả login owner Dashboard
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (email === "thuy5@gmail.com" && password === "123456") {
       localStorage.setItem("token", "fake-token");
-      navigate("/dashboard");
+
+      navigate("/owner"); // 👈 chuyển sang owner dashboard
     } else {
       alert("Sai tài khoản hoặc mật khẩu");
     }
   };
 
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
 
-//   try {
-//     const res = await axiosClient.post("/login", {
-//       email,
-//       password,
-//     });
 
-//     localStorage.setItem("token", res.data.token);
+  //code giả login user Dashboard
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
 
-//     navigate("/dashboard"); // ✅ dùng ở đây
+  //   if (email === "thuy5@gmail.com" && password === "123456") {
+  //     localStorage.setItem("token", "fake-token");
+  //     navigate("/dashboard");
+  //   } else {
+  //     alert("Sai tài khoản hoặc mật khẩu");
+  //   }
+  // };
 
-//   } catch (err) {
-//   alert(err.response?.data?.message || "Login failed");
-// }
-// };
+  
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const res = await axiosClient.post("/login", {
+  //       email,
+  //       password,
+  //     });
+
+  //     localStorage.setItem("token", res.data.token);
+
+  //     navigate("/dashboard"); // ✅ dùng ở đây
+
+  //   } catch (err) {
+  //   alert(err.response?.data?.message || "Login failed");
+  // }
+  // };
 
   return (
     <Box
