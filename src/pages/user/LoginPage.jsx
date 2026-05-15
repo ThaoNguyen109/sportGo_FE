@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
+import axiosClient from "../api/axiosClient";
 import {
   Box,
   Button,
@@ -13,8 +13,9 @@ import { useState } from "react";
 import { Visibility, VisibilityOff, Email } from "@mui/icons-material";
 
 export default function Login() {
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
+const [email, setEmail] = useState("thuy5@gmail.com");
+const [password, setPassword] = useState("123456");
+
 
   //const [email, setEmail] = useState("");
   //const [password, setPassword] = useState("");
@@ -23,30 +24,47 @@ const [password, setPassword] = useState("");
   
   const navigate = useNavigate();
 
+
+  // code login owner Dashboard
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axiosClient.post("/auth/login", {
+      const res = await axiosClient.post("/login", {
         email,
         password,
       });
 
-      console.log("=== PHẢN HỒI TỪ API LOGIN ===", res.data);
+      console.log(res.data);
 
-      const token = res.data?.token || res.data?.access_token || res.data?.data?.access_token;
+      // lưu token
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
 
-      if (token) {
-        localStorage.setItem("token", token);
-        const userInfo = res.data?.user || res.data?.data?.user || { name: email.split('@')[0], email: email };
-        console.log("=== USER INFO SẼ LƯU VÀO LOCALSTORAGE ===", userInfo);
-        localStorage.setItem("user", JSON.stringify(userInfo));
-        navigate("/dashboard");
+      // lưu user
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
+
+      // điều hướng theo role
+      if (res.data.user.role === "owner") {
+        navigate("/owner");
+      } else if (res.data.user.role === "admin") {
+        navigate("/admin");
       } else {
-        alert("Đăng nhập thành công nhưng không nhận được token");
+        navigate("/dashboard");
       }
+
     } catch (err) {
-      alert(err.response?.data?.message || err.message || "Đăng nhập thất bại");
+      console.log(err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login failed"
+      );
     }
   };
 

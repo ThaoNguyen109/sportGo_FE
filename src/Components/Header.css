@@ -1,0 +1,13 @@
+.notification-dropdown {
+  width: 360px;
+  max-height: 500px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  color: #000;
+}
+
+.notification-dropdown * {
+  color: #000;
+}
