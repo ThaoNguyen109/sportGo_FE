@@ -2,8 +2,10 @@ import { Box, TextField, Paper, Typography } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { useNavigate } from "react-router-dom";
 
 const SearchBar = ({ setKeyword }) => {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
@@ -15,7 +17,7 @@ const SearchBar = ({ setKeyword }) => {
         alight: "center",
         display: "flex",
         justifyContent: "center",
-        
+
       }}
     >
       <Paper
@@ -70,21 +72,31 @@ const SearchBar = ({ setKeyword }) => {
             px: 1,
           }}
         >
-          <Box sx={{color: "#18643b", display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}>
+          <Box sx={{ color: "#18643b", display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}>
             <MapIcon fontSize="small" />
             <Typography fontSize={13} sx={{ color: "#18643b" }}>
               Bản đồ
             </Typography>
           </Box>
 
-          <Box sx={{color: "#18643b", display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}>
+          <Box
+            onClick={() => navigate("/booking/history")}
+            sx={{
+              color: "#18643b",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              cursor: "pointer",
+            }}
+          >
             <CheckBoxIcon fontSize="small" />
+
             <Typography fontSize={13} sx={{ color: "#18643b" }}>
               Sân đã đặt
             </Typography>
           </Box>
 
-          <Box sx={{color: "#18643b", display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}>
+          <Box sx={{ color: "#18643b", display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}>
             <FavoriteIcon fontSize="small" />
             <Typography fontSize={13} sx={{ color: "#18643b" }}>
               Yêu thích

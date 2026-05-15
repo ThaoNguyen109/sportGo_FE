@@ -16,6 +16,7 @@ export default function Login() {
 const [email, setEmail] = useState("thuy5@gmail.com");
 const [password, setPassword] = useState("123456");
 
+
   //const [email, setEmail] = useState("");
   //const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -24,15 +25,24 @@ const [password, setPassword] = useState("123456");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (email === "thuy5@gmail.com" && password === "123456") {
-      localStorage.setItem("token", "fake-token");
-      navigate("/dashboard");
-    } else {
-      alert("Sai tài khoản hoặc mật khẩu");
-    }
-  };
+  if (email === "thuy5@gmail.com" && password === "123456") {
+
+    localStorage.setItem("token", "fake-token");
+
+    // THÊM DÒNG NÀY
+    localStorage.setItem("isLoggedIn", "true");
+
+    navigate("/dashboard");
+
+    // THÊM DÒNG NÀY
+    window.location.reload();
+
+  } else {
+    alert("Sai tài khoản hoặc mật khẩu");
+  }
+};
 
 // const handleSubmit = async (e) => {
 //   e.preventDefault();
