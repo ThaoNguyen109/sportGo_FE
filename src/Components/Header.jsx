@@ -36,7 +36,7 @@ const Header = () => {
   return (
     <Box
       sx={{
-        height: shrink ? 100 : 120, // 👈 co lại
+        height: 60, // 👈 co lại
         transition: "all 0.3s ease", // 👈 animation mượt
         background: "linear-gradient(135deg, #2272af, #0eb94d)",
         color: "white",

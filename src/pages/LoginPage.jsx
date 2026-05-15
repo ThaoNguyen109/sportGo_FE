@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
+import axiosClient from "../api/axiosClient";
 import {
   Box,
   Button,
@@ -24,6 +24,7 @@ const [password, setPassword] = useState("123456");
   
   const navigate = useNavigate();
 
+
   const handleSubmit = (e) => {
   e.preventDefault();
 
@@ -44,23 +45,83 @@ const [password, setPassword] = useState("123456");
   }
 };
 
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
+  // code login owner Dashboard
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-//   try {
-//     const res = await axiosClient.post("/login", {
-//       email,
-//       password,
-//     });
+    try {
+      const res = await axiosClient.post("/login", {
+        email,
+        password,
+      });
 
-//     localStorage.setItem("token", res.data.token);
+      console.log(res.data);
 
-//     navigate("/dashboard"); // ✅ dùng ở đây
+      // lưu token
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
 
-//   } catch (err) {
-//   alert(err.response?.data?.message || "Login failed");
-// }
-// };
+      // lưu user
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
+
+      // điều hướng theo role
+      if (res.data.user.role === "owner") {
+        navigate("/owner");
+      } else if (res.data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+
+    } catch (err) {
+      console.log(err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login failed"
+      );
+    }
+  };
+
+
+
+
+  //code giả login user Dashboard
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   if (email === "thuy5@gmail.com" && password === "123456") {
+  //     localStorage.setItem("token", "fake-token");
+  //     navigate("/dashboard");
+  //   } else {
+  //     alert("Sai tài khoản hoặc mật khẩu");
+  //   }
+  // };
+
+  
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const res = await axiosClient.post("/login", {
+  //       email,
+  //       password,
+  //     });
+
+  //     localStorage.setItem("token", res.data.token);
+
+  //     navigate("/dashboard"); // ✅ dùng ở đây
+
+  //   } catch (err) {
+  //   alert(err.response?.data?.message || "Login failed");
+  // }
+  // };
 
   return (
     <Box
