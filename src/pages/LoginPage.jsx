@@ -23,16 +23,46 @@ const [password, setPassword] = useState("123456");
   
   const navigate = useNavigate();
 
-  // code giả login owner Dashboard
-  const handleSubmit = (e) => {
+  // code login owner Dashboard
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (email === "thuy5@gmail.com" && password === "123456") {
-      localStorage.setItem("token", "fake-token");
+    try {
+      const res = await axiosClient.post("/login", {
+        email,
+        password,
+      });
 
-      navigate("/owner"); // 👈 chuyển sang owner dashboard
-    } else {
-      alert("Sai tài khoản hoặc mật khẩu");
+      console.log(res.data);
+
+      // lưu token
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
+
+      // lưu user
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
+
+      // điều hướng theo role
+      if (res.data.user.role === "owner") {
+        navigate("/owner");
+      } else if (res.data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+
+    } catch (err) {
+      console.log(err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login failed"
+      );
     }
   };
 
