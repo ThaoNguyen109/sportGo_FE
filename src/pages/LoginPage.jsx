@@ -25,26 +25,6 @@ const [password, setPassword] = useState("123456");
   const navigate = useNavigate();
 
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
-
-  if (email === "thuy5@gmail.com" && password === "123456") {
-
-    localStorage.setItem("token", "fake-token");
-
-    // THÊM DÒNG NÀY
-    localStorage.setItem("isLoggedIn", "true");
-
-    navigate("/dashboard");
-
-    // THÊM DÒNG NÀY
-    window.location.reload();
-
-  } else {
-    alert("Sai tài khoản hoặc mật khẩu");
-  }
-};
-
   // code login owner Dashboard
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,41 +67,6 @@ const [password, setPassword] = useState("123456");
       );
     }
   };
-
-
-
-
-  //code giả login user Dashboard
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-
-  //   if (email === "thuy5@gmail.com" && password === "123456") {
-  //     localStorage.setItem("token", "fake-token");
-  //     navigate("/dashboard");
-  //   } else {
-  //     alert("Sai tài khoản hoặc mật khẩu");
-  //   }
-  // };
-
-  
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const res = await axiosClient.post("/login", {
-  //       email,
-  //       password,
-  //     });
-
-  //     localStorage.setItem("token", res.data.token);
-
-  //     navigate("/dashboard"); // ✅ dùng ở đây
-
-  //   } catch (err) {
-  //   alert(err.response?.data?.message || "Login failed");
-  // }
-  // };
 
   return (
     <Box
