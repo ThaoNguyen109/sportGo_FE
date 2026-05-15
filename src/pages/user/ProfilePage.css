@@ -1,0 +1,436 @@
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  padding: 50px 20px;
+}
+
+.profile-container {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.profile-header h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.profile-header p {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 16px;
+}
+
+.edit-btn {
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 18px 45px rgba(21, 128, 61, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.16);
+}
+
+.profile-card-title p {
+  margin: 6px 0 24px;
+  color: #64748b;
+}
+
+.profile-content {
+  display: flex;
+  gap: 34px;
+  align-items: center;
+}
+
+.avatar-box {
+  text-align: center;
+  min-width: 150px;
+}
+
+.profile-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #16a34a, #86efac);
+  color: white;
+  font-size: 46px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.35);
+}
+
+.avatar-box span,
+.status-badge {
+  display: inline-block;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.info-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.info-item label {
+  display: block;
+  color: #166534;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.info-value {
+  background: #f8fafc;
+  border: 1px solid #d1fae5;
+  border-radius: 14px;
+  padding: 13px 16px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.info-item small {
+  display: block;
+  margin-top: 7px;
+  color: #94a3b8;
+}
+
+.role-badge {
+  display: inline-block;
+  background: #ecfdf5;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.status-box {
+  background: linear-gradient(135deg, #f0fdf4, #f7fee7);
+  border: 1px solid #bbf7d0;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-box h4 {
+  margin: 0;
+  color: #14532d;
+  font-size: 17px;
+}
+
+.status-box p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.user-id {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .profile-header,
+  .profile-content,
+  .status-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .edit-btn {
+    margin-top: 16px;
+  }
+}
+.profile-alert {
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: 700;
+  margin-bottom: 22px;
+  animation: fadeIn 0.25s ease;
+}
+
+.success-alert {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.cancel-alert {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.edit-input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #22c55e;
+  border-radius: 14px;
+  padding: 13px 16px;
+  color: #334155;
+  font-weight: 600;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.edit-input:focus {
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.save-btn,
+.cancel-edit-btn {
+  border: none;
+  padding: 13px 22px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+}
+
+.cancel-edit-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.password-card {
+  padding: 26px 30px;
+}
+
+.password-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.password-row h3 {
+  margin: 0;
+  color: #14532d;
+  font-size: 22px;
+}
+
+.password-row p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.change-password-btn {
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.change-password-box {
+  margin-top: 26px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #bbf7d0;
+  background: #ffffff;
+  animation: fadeIn 0.25s ease;
+}
+
+.change-password-box h3 {
+  margin: 0;
+  color: #14532d;
+  font-size: 22px;
+}
+
+.change-password-box p {
+  color: #64748b;
+  margin-bottom: 22px;
+}
+
+.change-password-box label {
+  display: block;
+  color: #166534;
+  font-weight: 700;
+  margin: 16px 0 8px;
+}
+
+.change-password-box input {
+  width: 100%;
+  border: 1px solid #d1fae5;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
+  color: #334155;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.change-password-box input:focus {
+  border-color: #22c55e;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.password-note {
+  margin-top: 22px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.password-note ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+}
+
+.password-note li {
+  margin-bottom: 6px;
+}
+
+.password-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.save-password-btn,
+.cancel-password-btn {
+  border: none;
+  padding: 13px 22px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.save-password-btn {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+}
+
+.cancel-password-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+.password-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 55px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #64748b;
+  z-index: 10;
+}
+
+.eye-icon:hover {
+  color: #16a34a;
+}
+.password-error {
+  color: #dc2626 !important;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 6px 0 0;
+}
+.success-message {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+
+  padding: 14px 18px;
+  border-radius: 12px;
+
+  margin-bottom: 20px;
+
+  font-weight: 600;
+
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

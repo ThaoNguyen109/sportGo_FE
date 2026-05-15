@@ -1,5 +1,5 @@
 import Header from "../components/Header";
-import BottomNav from "../components/BottomNav";
+
 
 const MainLayout = ({ children }) => {
   return (
@@ -14,7 +14,7 @@ const MainLayout = ({ children }) => {
        }}>
         {children}
       </div>
-      <BottomNav />
+      
     </>
   );
 };

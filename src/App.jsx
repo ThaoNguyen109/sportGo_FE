@@ -14,6 +14,8 @@ import VenueDetail from "./pages/owner/VenueDetail/VenueDetail";
 import BookingPage from "./pages/user/BookingPage";  
 import BookingConfirmPage from "./pages/user/BookingConfirmPage";
 import PaymentConfirmPage from "./pages/user/PaymentConfirmPage";
+import ProfilePage from "./pages/user/ProfilePage";
+import BookingHistory from "./pages/user/BookingHistory";
 
 
 function App() {
@@ -38,6 +40,8 @@ function App() {
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/booking-confirm" element={<BookingConfirmPage />} />
         <Route path="/payment-confirm" element={<PaymentConfirmPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/booking/history" element={<BookingHistory />} />
 
 
       </Routes>
