@@ -2,13 +2,31 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import "./PaymentConfirmPage.css";
+import axiosClient from "../../api/axiosClient";
 
 const PaymentConfirmPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const booking = location.state || {};
 
-    const [seconds, setSeconds] = useState(600);
+    const [seconds, setSeconds] = useState(booking.timeLeft || 600);
+    const [isCanceling, setIsCanceling] = useState(false);
+
+    // Khóa nút back của trình duyệt
+    useEffect(() => {
+        const pushState = () => window.history.pushState(null, "", window.location.href);
+        pushState();
+
+        const handlePopState = () => {
+            if (!isCanceling) {
+                pushState();
+                alert("Vui lòng bấm 'Hủy đặt sân' để hệ thống hủy lịch đang giữ và quay về trang chủ.");
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, [isCanceling]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -29,12 +47,21 @@ const PaymentConfirmPage = () => {
         const sec = totalSeconds % 60;
         return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
     };
-    const getEndTime = (startTime) => {
-        const [hour, minute] = startTime.split(":").map(Number);
-        const date = new Date();
-        date.setHours(hour, minute + 30, 0, 0);
 
-        return date.toTimeString().slice(0, 5);
+    const handleCancelBooking = async () => {
+        setIsCanceling(true);
+        if (booking.bookingId) {
+            try {
+                await axiosClient.delete(`/bookings/${booking.bookingId}`);
+                console.log(`Đã gọi API DELETE /bookings/${booking.bookingId} thành công.`);
+            } catch (error) {
+                console.error("Lỗi khi hủy giữ sân:", error);
+            }
+        } else {
+            console.warn("Không tìm thấy booking.bookingId trong state! API hủy sẽ không được gọi.");
+        }
+
+        navigate("/dashboard");
     };
 
     return (
@@ -42,10 +69,10 @@ const PaymentConfirmPage = () => {
             <div className="payment-page">
                 <div className="payment-header">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => alert("Vui lòng bấm 'Hủy đặt sân' để hệ thống hủy lịch đang giữ và quay về trang chủ.")}
                         className="btn-back"
                     >
-                        ←  
+                        ←
                     </button>
 
                     <h2>Xác nhận thanh toán</h2>
@@ -57,9 +84,15 @@ const PaymentConfirmPage = () => {
                             <div className="payment-title">Thông tin thanh toán</div>
 
                             <div className="qr-box">
-                                <div className="fake-qr">
-                                    QR
-                                </div>
+                                {booking.qrUrl ? (
+                                    <img
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(booking.qrUrl)}`}
+                                        alt="MoMo QR Code"
+                                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                    />
+                                ) : (
+                                    <div className="fake-qr">QR</div>
+                                )}
                             </div>
 
                             <p className="qr-note">
@@ -67,7 +100,7 @@ const PaymentConfirmPage = () => {
                             </p>
 
                             <div className="payment-actions">
-                                <button className="cancel-payment" onClick={() => navigate("/booking-confirm")}>
+                                <button className="cancel-payment" onClick={handleCancelBooking}>
                                     HỦY ĐẶT SÂN
                                 </button>
 
@@ -111,17 +144,20 @@ const PaymentConfirmPage = () => {
                                 <span>Thời gian đặt</span>
                                 <div>
                                     {booking.selectedSlots?.length > 0 ? (
-                                        booking.selectedSlots.map((slot, index) => {
-                                            const [court, startTime] = slot.split("-");
+                                        booking.selectedSlots.map((item, index) => {
+                                            const fieldName = item.field?.field_name || "Sân";
+                                            const time = item.slot?.start_time.slice(0, 5) || "00:00";
+                                            const end = item.slot?.end_time.slice(0, 5) || "00:00";
+                                            const price = item.slot?.price || 0;
 
                                             return (
                                                 <div key={index}>
-                                                    <b>{court}</b>: {startTime} - {getEndTime(startTime)} | 50.000đ
+                                                    <b>{fieldName}</b>: {time} - {end} | {Number(price).toLocaleString("vi-VN")}đ
                                                 </div>
                                             );
                                         })
                                     ) : (
-                                        <b>Sân 1: 22:00 - 22:30 | 50.000đ</b>
+                                        <b>Chưa chọn khung giờ</b>
                                     )}
                                 </div>
                             </div>

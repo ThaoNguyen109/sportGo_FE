@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import "./BookingConfirmPage.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axiosClient from "../../api/axiosClient";
 
 const BookingConfirmPage = () => {
     const navigate = useNavigate();
@@ -9,8 +10,12 @@ const BookingConfirmPage = () => {
     const [customerName, setCustomerName] = useState("");
     const [customerPhone, setCustomerPhone] = useState("");
     const [note, setNote] = useState("");
+    
+    const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+    const [isCanceling, setIsCanceling] = useState(false);
 
     const booking = location.state || {
+        bookingId: null,
         fieldName: "Sân A",
         address: "Hải Phòng",
         phone: "0984229224",
@@ -20,9 +25,109 @@ const BookingConfirmPage = () => {
         totalPrice: 0,
     };
 
+    // Khởi tạo countdown
+    useEffect(() => {
+        alert("Vui lòng thanh toán đơn hàng trong 10 phút.");
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    alert("Đã hết thời gian giữ sân, vui lòng đặt lại.");
+                    if (!isCanceling) handleCancelBooking();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [isCanceling]);
+
+    // Khóa nút back của trình duyệt
+    useEffect(() => {
+        const pushState = () => window.history.pushState(null, "", window.location.href);
+        pushState();
+        
+        const handlePopState = () => {
+            if (!isCanceling) {
+                pushState();
+                alert("Vui lòng bấm 'Hủy giữ sân' để hệ thống hủy lịch đang giữ và chọn lại từ đầu.");
+            }
+        };
+        
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, [isCanceling]);
+
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    };
+
+    const handleCancelBooking = async () => {
+        setIsCanceling(true);
+        console.log("Thực hiện hủy giữ sân cho bookingId:", booking.bookingId);
+        if (booking.bookingId) {
+            try {
+                await axiosClient.delete(`/bookings/${booking.bookingId}`);
+                console.log(`Đã gọi API DELETE /bookings/${booking.bookingId} thành công.`);
+            } catch (error) {
+                console.error("Lỗi khi gọi API hủy giữ sân:", error);
+            }
+        } else {
+            console.warn("Không tìm thấy booking.bookingId trong state! API hủy sẽ không được gọi.");
+        }
+        
+        // Delay một chút để đảm bảo network request kịp gửi đi trước khi chuyển trang
+        setTimeout(() => {
+            navigate(-2);
+        }, 300);
+    };
+
+    const handleConfirmAndPay = async () => {
+        if (!booking.bookingId) {
+            return alert("Không tìm thấy mã đơn hàng. Vui lòng thử lại.");
+        }
+        try {
+            console.log("Đang gọi MoMo create với booking_id:", booking.bookingId);
+            const res = await axiosClient.post("/payments/momo/create", {
+                booking_id: Number(booking.bookingId)
+            });
+            console.log("MoMo API Response:", res.data);
+            if (res.data?.success) {
+                navigate("/payment-confirm", {
+                    state: {
+                        ...booking,
+                        customerName,
+                        customerPhone,
+                        note,
+                        qrUrl: res.data.data.pay_url,
+                        timeLeft: timeLeft
+                    },
+                });
+            } else {
+                alert(res.data?.message || "Lỗi tạo thanh toán MoMo.");
+            }
+        } catch (error) {
+            console.error("Lỗi khi thanh toán MoMo:", error);
+            const errorData = error.response?.data;
+            console.error("Chi tiết lỗi backend:", errorData);
+            
+            if (errorData) {
+                const errorMsg = errorData.message || errorData.error || JSON.stringify(errorData);
+                alert(`Lỗi từ server: ${errorMsg}`);
+            } else {
+                alert("Lỗi kết nối khi thanh toán MoMo.");
+            }
+        }
+    };
+
     return (
         <MainLayout>
             <div className="confirm-page">
+                <div className="countdown-banner" style={{ textAlign: 'center', padding: '10px', background: '#ffebee', color: '#c62828', fontWeight: 'bold', borderRadius: '8px', marginBottom: '15px' }}>
+                    ⏳ Thời gian còn lại để hoàn tất: {formatTime(timeLeft)}
+                </div>
                 <div className="confirm-card">
                     <div className="section">
                         <div className="section-title">Thông tin sân</div>
@@ -39,23 +144,20 @@ const BookingConfirmPage = () => {
 
                         <div className="time-list">
                             {booking.selectedSlots.length > 0 ? (
-                                booking.selectedSlots.map((slot, index) => {
-                                    // slot dạng: "Sân 2-22:30"
-                                    const [fieldPart, time] = slot.split("-");
-                                    const field = fieldPart.replace("Sân ", "");
-
-                                    // 👉 tính giờ kết thúc (+30 phút)
-                                    const [h, m] = time.split(":").map(Number);
-                                    const endDate = new Date(0, 0, 0, h, m + 30);
-                                    const end = endDate.toTimeString().slice(0, 5);
+                                booking.selectedSlots.map((item, index) => {
+                                    // item là object: { key, field, slot }
+                                    const fieldName = item.field?.field_name || "Sân";
+                                    const time = item.slot?.start_time.slice(0, 5) || "00:00";
+                                    const end = item.slot?.end_time.slice(0, 5) || "00:00";
+                                    const price = item.slot?.price || 0;
 
                                     return (
                                         <div key={index} className="time-item">
                                             <div>
-                                                <b>Sân {field}</b>: {time} - {end}
+                                                <b>{fieldName}</b>: {time} - {end}
                                             </div>
                                             <div style={{ color: "#2f7d32", fontWeight: "bold" }}>
-                                                50.000đ
+                                                {Number(price).toLocaleString("vi-VN")}đ
                                             </div>
                                         </div>
                                     );
@@ -96,22 +198,13 @@ const BookingConfirmPage = () => {
                     </div>
 
                     <div className="confirm-actions">
-                        <button className="cancel-btn" onClick={() => navigate("/booking")}>
+                        <button className="cancel-btn" onClick={handleCancelBooking}>
                             HỦY GIỮ SÂN
                         </button>
 
                         <button
                             className="confirm-btn"
-                            onClick={() =>
-                                navigate("/payment-confirm", {
-                                    state: {
-                                        ...booking,
-                                        customerName,
-                                        customerPhone,
-                                        note,
-                                    },
-                                })
-                            }
+                            onClick={handleConfirmAndPay}
                         >
                             XÁC NHẬN & THANH TOÁN
                         </button>
