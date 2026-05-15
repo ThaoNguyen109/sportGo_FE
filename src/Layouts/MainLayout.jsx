@@ -1,20 +1,20 @@
-import Header from "../components/Header";
-import BottomNav from "../components/BottomNav";
+import Header from "../Components/Header";
+
 
 const MainLayout = ({ children }) => {
   return (
     <>
       <Header />
-      <div style={{ 
+      <div style={{
         paddingBottom: "70px",
-        background: "#fff", 
+        background: "#fff",
         paddingLeft: 16,
         paddingRight: 16,
-    
-       }}>
+
+      }}>
         {children}
       </div>
-      <BottomNav />
+
     </>
   );
 };

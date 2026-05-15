@@ -13,8 +13,8 @@ import { useState } from "react";
 import { Visibility, VisibilityOff, Email } from "@mui/icons-material";
 
 export default function Login() {
-const [email, setEmail] = useState("thuy5@gmail.com");
-const [password, setPassword] = useState("123456");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
 
   //const [email, setEmail] = useState("");
   //const [password, setPassword] = useState("");
@@ -23,34 +23,32 @@ const [password, setPassword] = useState("123456");
   
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (email === "thuy5@gmail.com" && password === "123456") {
-      localStorage.setItem("token", "fake-token");
-      navigate("/dashboard");
-    } else {
-      alert("Sai tài khoản hoặc mật khẩu");
+    try {
+      const res = await axiosClient.post("/auth/login", {
+        email,
+        password,
+      });
+
+      console.log("=== PHẢN HỒI TỪ API LOGIN ===", res.data);
+
+      const token = res.data?.token || res.data?.access_token || res.data?.data?.access_token;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        const userInfo = res.data?.user || res.data?.data?.user || { name: email.split('@')[0], email: email };
+        console.log("=== USER INFO SẼ LƯU VÀO LOCALSTORAGE ===", userInfo);
+        localStorage.setItem("user", JSON.stringify(userInfo));
+        navigate("/dashboard");
+      } else {
+        alert("Đăng nhập thành công nhưng không nhận được token");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || "Đăng nhập thất bại");
     }
   };
-
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
-
-//   try {
-//     const res = await axiosClient.post("/login", {
-//       email,
-//       password,
-//     });
-
-//     localStorage.setItem("token", res.data.token);
-
-//     navigate("/dashboard"); // ✅ dùng ở đây
-
-//   } catch (err) {
-//   alert(err.response?.data?.message || "Login failed");
-// }
-// };
 
   return (
     <Box
