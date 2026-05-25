@@ -1,0 +1,187 @@
+.payment-page {
+  background: #f4fbf5;
+  min-height: calc(100vh - 90px);
+  padding-bottom: 40px;
+}
+
+.payment-header {
+  position: relative;
+  background: #4caf50;
+  color: white;
+  text-align: center;
+  padding: 18px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.payment-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.payment-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  width: 900px;
+  margin: 30px auto;
+}
+
+.payment-card,
+.countdown-card,
+.detail-card {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #d9eadb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.payment-card {
+  padding: 24px;
+}
+
+.payment-title,
+.detail-title {
+  color: #2f7d32;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.qr-box {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.fake-qr {
+  width: 210px;
+  height: 210px;
+  border: 8px solid #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  font-weight: bold;
+  background: repeating-linear-gradient(
+    45deg,
+    #000 0,
+    #000 8px,
+    #fff 8px,
+    #fff 16px
+  );
+  color: #e91e63;
+}
+
+.qr-note {
+  background: #fff8d7;
+  padding: 14px;
+  border-left: 5px solid #f2c230;
+  text-align: center;
+  font-weight: bold;
+}
+
+.payment-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.cancel-payment,
+.confirm-payment {
+  height: 46px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cancel-payment {
+  background: white;
+  border: 1px solid #e5b4b4;
+  color: #b91c1c;
+}
+
+.confirm-payment {
+  background: #f2c230;
+  color: white;
+  border: none;
+}
+
+.countdown-card {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.countdown-card p {
+  margin: 0 0 12px;
+}
+
+.countdown-time {
+  background: #4caf50;
+  color: white;
+  font-size: 34px;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.detail-card {
+  overflow: hidden;
+}
+
+.detail-title {
+  background: #4caf50;
+  color: white;
+  padding: 14px 18px;
+  margin: 0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-row span {
+  color: #555;
+}
+
+.detail-total {
+  padding: 18px;
+  color: #2f7d32;
+  font-size: 20px;
+  font-weight: bold;
+}
+.header-green {
+  position: relative;
+}
+.btn-back {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  
+  border: none;
+  background: rgba(255, 255, 255, 0.35); /* 👈 tăng độ đậm */
+  color: white;
+  
+  font-size: 18px;
+  font-weight: bold;
+  
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
