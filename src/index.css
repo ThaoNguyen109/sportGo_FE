@@ -133,3 +133,98 @@ button:hover {
 .section {
   padding: 60px 20px;
 }
+
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7fb;
+}
+
+/* SIDEBAR */
+
+.admin-sidebar{
+  width: 260px;
+  height: 100vh;
+  background: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  border-right: 1px solid #eee;
+  padding: 20px;
+}
+
+.logo-text{
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.logo-blue{
+  color: #2f80ed;
+}
+
+.logo-green{
+  color: #27ae60;
+}
+
+.sidebar-menu{
+  margin-top: 40px;
+}
+
+.sidebar-link{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #666;
+  margin-bottom: 10px;
+  transition: 0.3s;
+  font-weight: 500;
+}
+
+.sidebar-link:hover{
+  background: #ffe9e9;
+  color: #ff4d4f;
+}
+
+.admin-main{
+  margin-left: 260px;
+  min-height: 100vh;
+}
+
+.admin-topbar{
+  background: white;
+  padding: 20px 30px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.dashboard-card{
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.payment-card{
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.filter-box{
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
