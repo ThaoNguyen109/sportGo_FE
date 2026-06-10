@@ -16,6 +16,7 @@ import BookingConfirmPage from "./pages/user/BookingConfirmPage";
 import PaymentConfirmPage from "./pages/user/PaymentConfirmPage";
 import ProfilePage from "./pages/user/ProfilePage";
 import BookingHistory from "./pages/user/BookingHistory";
+import BookingRefundPage from "./pages/user/BookingRefundPage";
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
         <Route path="/payment-confirm" element={<PaymentConfirmPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/booking/history" element={<BookingHistory />} />
+        <Route path="/booking/refund" element={<BookingRefundPage />} />
 
 
       </Routes>

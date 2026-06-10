@@ -13,22 +13,57 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import "./ProfilePage.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import axiosClient from "../../api/axiosClient";
 
 export default function ProfilePage() {
   const [isEdit, setIsEdit] = useState(false);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: "Hoàng Tuấn Anh 1",
-    phone: "0984292224",
-    email: "user1@gmail.com",
-    role: "ROLE_USER",
+    id: "",
+    name: "",
+    phone: "",
+    email: "",
+    role: "",
   });
 
   const [backupData, setBackupData] = useState(formData);
+
+  // Lấy dữ liệu profile thực tế từ Backend
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axiosClient.get("/auth/me");
+        if (res.data?.user) {
+          const user = res.data.user;
+          const userProfile = {
+            id: user.id || "",
+            name: user.name || "",
+            phone: user.phone || "",
+            email: user.email || "",
+            role: user.role || "user",
+          };
+          setFormData(userProfile);
+          setBackupData(userProfile);
+
+          // Đồng bộ lại với localStorage
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải thông tin cá nhân:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleEdit = () => {
     setBackupData(formData);
@@ -53,6 +88,22 @@ export default function ProfilePage() {
     setTimeout(() => {
       setMessage("");
     }, 2500);
+  };
+
+  const handleLogout = async () => {
+    const confirm = window.confirm("Bạn có chắc chắn muốn đăng xuất?");
+    if (!confirm) return;
+
+    try {
+      await axiosClient.post("/auth/logout");
+    } catch (error) {
+      console.error("Lỗi khi gọi API đăng xuất:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+      navigate("/login");
+    }
   };
   const [showChangePassword, setShowChangePassword] = useState(false);
 
@@ -108,6 +159,17 @@ export default function ProfilePage() {
     setPasswordErrors({});
   };
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "calc(100vh - 90px)" }}>
+          <h3 style={{ color: "#2f7d32" }}>Đang tải thông tin cá nhân...</h3>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="profile-page">
@@ -119,9 +181,32 @@ export default function ProfilePage() {
             </div>
 
             {!isEdit && (
-              <button className="edit-btn" onClick={handleEdit}>
-                ✎ Chỉnh sửa
-              </button>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button className="edit-btn" onClick={handleEdit}>
+                  ✎ Chỉnh sửa
+                </button>
+                <button 
+                  className="logout-btn" 
+                  onClick={handleLogout}
+                  style={{
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    transition: "0.2s"
+                  }}
+                  onMouseOver={(e) => e.target.style.background = "#dc2626"}
+                  onMouseOut={(e) => e.target.style.background = "#ef4444"}
+                >
+                  🚪 Đăng xuất
+                </button>
+              </div>
             )}
           </div>
           {message === "success" && (
@@ -144,7 +229,9 @@ export default function ProfilePage() {
 
             <div className="profile-content">
               <div className="avatar-box">
-                <div className="profile-avatar">T</div>
+                <div className="profile-avatar">
+                  {formData.name ? formData.name.charAt(0).toUpperCase() : "U"}
+                </div>
                 <span>Đã xác thực</span>
               </div>
 
@@ -187,7 +274,9 @@ export default function ProfilePage() {
 
                 <div className="info-item">
                   <label>Vai trò</label>
-                  <div className="role-badge">ROLE_USER</div>
+                  <div className="role-badge" style={{ textTransform: "uppercase" }}>
+                    {formData.role === "owner" ? "Chủ sân (Owner)" : formData.role === "admin" ? "Quản trị viên (Admin)" : "Khách hàng (User)"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -220,7 +309,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="user-id">
-              ID người dùng: e61bfe0b-2c4a-491c-8018-f4ec95ca79a1
+              ID người dùng: #{formData.id || "N/A"}
             </div>
           </div>
 

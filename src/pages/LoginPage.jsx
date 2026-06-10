@@ -49,6 +49,12 @@ const [password, setPassword] = useState("123456");
         JSON.stringify(res.data.user)
       );
 
+      // lưu trạng thái đăng nhập
+      localStorage.setItem(
+        "isLoggedIn",
+        "true"
+      );
+
       // điều hướng theo role
       if (res.data.user.role === "owner") {
         navigate("/owner");
