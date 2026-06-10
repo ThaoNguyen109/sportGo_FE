@@ -136,6 +136,19 @@
   cursor: pointer;
 }
 
+.slot.booked {
+  background: #e76060;
+  cursor: pointer;
+}
+
+.slot.booked:hover {
+  filter: brightness(0.95);
+}
+
+.slot.active-booked {
+  outline: 2px solid #7f1d1d;
+}
+
 .slot:hover {
   background: #eafff0;
 }
@@ -163,6 +176,38 @@
   justify-content: flex-end;
   margin-top: 18px;
   margin-right: 30px;
+}
+
+.booking-selected-detail-box {
+  margin: 16px 30px 0;
+  padding: 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.booking-selected-detail-box h3 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.booking-selected-detail-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.booking-selected-detail-row div {
+  min-width: 180px;
+  color: #334155;
+}
+
+.booking-selected-detail-row strong {
+  color: #0f172a;
 }
 
 .price-detail-btn {

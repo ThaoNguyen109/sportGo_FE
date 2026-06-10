@@ -7,9 +7,7 @@ import Dashboard from "./pages/user/Dashboard";
 import DashboardOwner from "./pages/owner/DashboardOwner";
 import BookingManager from "./pages/owner/BookingManager";
 import VenueDetail from "./pages/owner/VenueDetail/VenueDetail";
-
-
-
+import BookingDetail from "./pages/owner/BookingDetail";
 
 import BookingPage from "./pages/user/BookingPage";  
 import BookingConfirmPage from "./pages/user/BookingConfirmPage";
@@ -33,6 +31,7 @@ function App() {
 
         <Route path="/owner/bookings" element={<BookingManager />} />
         <Route path="/owner/venues/:id" element={<VenueDetail />} />
+        <Route path="/owner/booking-detail"  element={<BookingDetail />}/>
 
 
 
