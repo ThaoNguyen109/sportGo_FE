@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const FieldCard = ({
+  id,
   name,
   location,
   image,
@@ -118,7 +119,7 @@ const FieldCard = ({
           }}
         >
           {/* LEFT */}
-          <Box>
+          <Box sx={{ flex: 1, minWidth: 0, pr: 1 }}>
             <Typography fontWeight="bold" fontSize={13}>
               {name}
             </Typography>
@@ -136,7 +137,7 @@ const FieldCard = ({
           <Button
             variant="contained"
             size="small"
-            onClick={() => navigate("/booking")}   // ✅ chuyển sang trang đặt sân
+            onClick={() => navigate("/booking", { state: { courtId: id } })}   // ✅ chuyển sang trang đặt sân và truyền courtId
             sx={{
               py: 0.4,
               px: 1.5,
@@ -144,6 +145,8 @@ const FieldCard = ({
               fontSize: 14,
               textTransform: "none",
               minWidth: "auto",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
               height: 28,
               background: "#18643b",
               "&:hover": {

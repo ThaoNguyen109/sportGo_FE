@@ -1,57 +1,54 @@
-import { useState } from "react";
-import MainLayout from "../../layouts/MainLayout";
-import SearchBar from "../../components/SearchBar";
-import FieldCard from "../../components/FieldCard";
-import { Grid, Box } from "@mui/material";
+import { useState, useEffect } from "react";
+import axiosClient from "../../api/axiosClient";
+import MainLayout from "../../Layouts/MainLayout";
+import SearchBar from "../../Components/SearchBar";
+import FieldCard from "../../Components/FieldCard";
+import { Grid, Box, CircularProgress } from "@mui/material";
 
 const Dashboard = () => {
   const [keyword, setKeyword] = useState("");
+  const [fields, setFields] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const data = [
-    { name: "Sân A", location: "Hà Nội", image: "https://picsum.photos/400/200?1", time:"05:00 - 24:00", rating:"4.9" },
-    { name: "Sân B", location: "HCM", image: "https://picsum.photos/400/200?2" },
+  useEffect(() => {
+    const fetchCourts = async (lat, lng) => {
+      try {
+        let url = "/courts";
+        if (lat && lng) {
+          url += `?lat=${lat}&lng=${lng}&max_distance=10`;
+        }
+        const res = await axiosClient.get(url);
+        if (res.data && res.data.success) {
+          setFields(res.data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách sân:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    { name: "Sân C", location: "Đà Nẵng", image: "https://picsum.photos/400/200?3" },
-    { name: "Sân D", location: "Hải Phòng", image: "https://picsum.photos/400/200?4" },
-    { name: "Sân E", location: "Cần Thơ", image: "https://picsum.photos/400/200?5" },
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchCourts(latitude, longitude);
+        },
+        (error) => {
+          console.error("Lỗi lấy vị trí:", error);
+          fetchCourts(); // Gọi API không có location nếu lỗi
+        }
+      );
+    } else {
+      fetchCourts();
+    }
+  }, []);
 
-    { name: "Sân F", location: "Huế", image: "https://picsum.photos/400/200?6" },
-    { name: "Sân G", location: "Quảng Ninh", image: "https://picsum.photos/400/200?7" },
-    { name: "Sân H", location: "Bình Dương", image: "https://picsum.photos/400/200?8" },
-
-    { name: "Sân I", location: "Đồng Nai", image: "https://picsum.photos/400/200?9" },
-    { name: "Sân J", location: "Nha Trang", image: "https://picsum.photos/400/200?10" },
-    { name: "Sân K", location: "Vũng Tàu", image: "https://picsum.photos/400/200?11" },
-    { name: "Sân L", location: "Thanh Hóa", image: "https://picsum.photos/400/200?12" },
-
-     { name: "Sân M", location: "Tháp Mười", image: "https://picsum.photos/400/200?13" },
-    { name: "Sân N", location: "Hai Bà Trưng", image: "https://picsum.photos/400/200?14" },
-    { name: "Sân O", location: "Hoàng Mai", image: "https://picsum.photos/400/200?15" },
-    { name: "Sân P", location: "Thanh Xuân", image: "https://picsum.photos/400/200?16" },
-  ];
-
-   // 🔍 FILTER
-  const filteredData = data.filter((item) =>
+  // 🔍 FILTER
+  const filteredData = fields.filter((item) =>
     item.name.toLowerCase().includes(keyword.toLowerCase()) ||
-    item.location.toLowerCase().includes(keyword.toLowerCase())
+    (item.address && item.address.toLowerCase().includes(keyword.toLowerCase()))
   );
-
-  //gọi data từ DB
-// const Dashboard = () => {
-//   const [fields, setFields] = useState([]);
-
-//   useEffect(() => {
-//     const fetchFields = async () => {
-//       try {
-//         const res = await axiosClient.get("/fields");
-//         setFields(res.data); // 👈 dữ liệu từ DB
-//       } catch (err) {
-//         console.log(err);
-//       }
-//     };
-
-//     fetchFields();
-//   }, []);
 
   return (
     <MainLayout>
@@ -80,13 +77,27 @@ const Dashboard = () => {
             gap: 2,
           }}
         >
-          {filteredData.map((item, index) => (
-            <FieldCard key={index} {...item} />
-          ))}
+          {loading ? (
+            <Box sx={{ color: "white", width: "100%", gridColumn: "1 / -1", textAlign: "center", mt: 4 }}>
+              Đang tải danh sách sân gần bạn...
+            </Box>
+          ) : (
+            filteredData.map((item) => (
+              <FieldCard 
+                key={item.id} 
+                id={item.id}
+                name={item.name}
+                location={item.address}
+                image={item.image}
+                distance={item.distance_km ? `${item.distance_km.toFixed(1)}km` : ""}
+                time={`${item.open_time ? item.open_time.slice(0,5) : "00:00"} - ${item.close_time ? item.close_time.slice(0,5) : "24:00"}`}
+              />
+            ))
+          )}
 
         </Box>
         {/* ❗ Không có kết quả */}
-        {filteredData.length === 0 && (
+        {!loading && filteredData.length === 0 && (
           <p style={{ color: "white", marginTop: 20 }}>
             Không tìm thấy sân
           </p>
