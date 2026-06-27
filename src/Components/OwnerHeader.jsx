@@ -1,33 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Typography, IconButton, Badge, ClickAwayListener } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import axiosClient from "../api/axiosClient";
 
 const OwnerHeader = () => {
   const [openNotifications, setOpenNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
 
-  const notifications = [
-    {
-      title: "Booking đã hết hạn",
-      description: "Booking của bạn tại Đức Thảo vào ngày 2026-01-12 đã hết hạn do chưa thanh toán",
-      time: "17:23 12/01/2026",
-    },
-    {
-      title: "Booking đã hoàn thành",
-      description: "Booking của bạn tại Đức Thảo vào ngày 2026-01-12 đã hoàn thành. Cảm ơn bạn đã sử dụng dịch vụ!",
-      time: "17:17 12/01/2026",
-    },
-    {
-      title: "Booking đã được xác nhận",
-      description: "Booking của bạn tại Đức Thảo vào ngày 2026-01-12 đã được xác nhận",
-      time: "17:16 12/01/2026",
-    },
-    {
-      title: "Booking đã hết hạn",
-      description: "Booking của bạn tại Sân cầu lông Cảnh Hồ vào ngày 2026-01-12 đã hết hạn do chưa thanh toán",
-      time: "10:40 12/01/2026",
-    },
-  ];
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!localStorage.getItem("token")) {
+        return;
+      }
+
+      setLoadingNotifications(true);
+
+      try {
+        const res = await axiosClient.get("/notifications");
+        const page = res.data?.data;
+        const items = Array.isArray(page?.data) ? page.data : [];
+        setNotifications(items);
+        setUnreadCount(items.filter((item) => !item.is_read).length);
+      } catch (error) {
+        console.error("Lỗi tải thông báo:", error);
+      } finally {
+        setLoadingNotifications(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   return (
     <Box
@@ -76,7 +81,7 @@ const OwnerHeader = () => {
             onClick={() => setOpenNotifications((prev) => !prev)}
             sx={{ color: "white" }}
           >
-            <Badge badgeContent={notifications.length} color="error">
+            <Badge badgeContent={unreadCount} color="error">
               <NotificationsIcon sx={{ color: "white" }} />
             </Badge>
           </IconButton>
@@ -104,25 +109,37 @@ const OwnerHeader = () => {
               </Box>
 
               <Box sx={{ maxHeight: 320, overflowY: "auto" }}>
-                {notifications.map((item, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      px: 2,
-                      py: 2,
-                      borderBottom: index !== notifications.length - 1 ? "1px solid #f1f5f9" : "none",
-                      background: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 0.5, color: "#111827"   }}>
-                      {item.title}
-                    </Typography>
-                    <Typography sx={{ fontSize: 12, color: "#525252", mb: 1 }}>
-                      {item.description}
-                    </Typography>
-                    <Typography sx={{ fontSize: 11, color: "#9ca3af" }}>{item.time}</Typography>
+                {loadingNotifications ? (
+                  <Box sx={{ p: 2 }}>
+                    <Typography sx={{ color: "#374151" }}>Đang tải thông báo...</Typography>
                   </Box>
-                ))}
+                ) : notifications.length === 0 ? (
+                  <Box sx={{ p: 2 }}>
+                    <Typography sx={{ color: "#374151" }}>Không có thông báo nào.</Typography>
+                  </Box>
+                ) : (
+                  notifications.map((item, index) => (
+                    <Box
+                      key={item.id || index}
+                      sx={{
+                        px: 2,
+                        py: 2,
+                        borderBottom: index !== notifications.length - 1 ? "1px solid #f1f5f9" : "none",
+                        background: item.is_read ? "#ffffff" : "#f0fdf4",
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 0.5, color: "#111827" }}>
+                        {item.title}
+                      </Typography>
+                      <Typography sx={{ fontSize: 12, color: "#525252", mb: 1 }}>
+                        {item.content || item.description}
+                      </Typography>
+                      <Typography sx={{ fontSize: 11, color: "#9ca3af" }}>
+                        {item.created_at ? new Date(item.created_at).toLocaleString() : item.time}
+                      </Typography>
+                    </Box>
+                  ))
+                )}
               </Box>
             </Box>
           )}

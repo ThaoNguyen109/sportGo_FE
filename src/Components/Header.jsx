@@ -62,7 +62,7 @@ const Header = () => {
           cursor: "pointer"
         }}
       >
-        Sport Booking
+        Sport Go
       </Typography>
 
       {/* MENU */}
