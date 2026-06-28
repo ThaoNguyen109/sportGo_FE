@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import MainLayout from "../../layouts/MainLayout";
+import MainLayout from "../../Layouts/MainLayout";
 import "./PaymentConfirmPage.css";
 import axiosClient from "../../api/axiosClient";
 

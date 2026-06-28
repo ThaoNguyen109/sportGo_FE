@@ -1,5 +1,5 @@
-import MainLayout from "../../layouts/MainLayout";
-import BookingGrid from "../../components/BookingGrid";
+import MainLayout from "../../Layouts/MainLayout";
+import BookingGrid from "../../Components/BookingGrid";
 
 const BookingPage = () => {
   return (

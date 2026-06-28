@@ -1,6 +1,6 @@
 import "./BookingHistory.css";
 import React, { useState, useEffect } from "react";
-import Header from "../../components/Header";
+import Header from "../../Components/Header";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 
