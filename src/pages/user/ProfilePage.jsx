@@ -15,7 +15,7 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import "./ProfilePage.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import MainLayout from "../../layouts/MainLayout";
+import MainLayout from "../../Layouts/MainLayout";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 
