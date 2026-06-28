@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import MainLayout from "../../layouts/MainLayout";
+import MainLayout from "../../Layouts/MainLayout";
 import "./BookingConfirmPage.css";
 import { useState, useEffect } from "react";
 import axiosClient from "../../api/axiosClient";
