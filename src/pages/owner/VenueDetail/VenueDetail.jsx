@@ -64,6 +64,55 @@ const VenueDetail = () => {
     T7: "06:00-22:00",
     CN: "08:00-20:00",
   });
+
+  const defaultSchedules = {
+    "Thứ 2": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 3": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 4": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 5": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 6": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 7": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Chủ nhật": [
+      {
+        hours: "08:00-20:00",
+        price: "250k",
+      },
+    ],
+  };
+
+  const [newCourtSchedules, setNewCourtSchedules] =
+      useState(defaultSchedules);
+
   const [editCourtIndex, setEditCourtIndex] = useState(null);
   const [editCourtName, setEditCourtName] = useState("");
   const [editCourtActive, setEditCourtActive] = useState(true);
@@ -85,6 +134,10 @@ const VenueDetail = () => {
     T7: "06:00-22:00",
     CN: "08:00-20:00",
   });
+
+  const [editSchedules, setEditSchedules] =
+    useState(defaultSchedules);
+
   const addCourtRef = useRef(null);
 
   const [showAddService, setShowAddService] = useState(false);
@@ -177,7 +230,7 @@ const VenueDetail = () => {
           mb: 3,
         }}
       >
-        {["Thông tin chung", "Dịch vụ", "Hình ảnh", "Sân"].map(
+        {["Thông tin chung", "Hình ảnh", "Sân"].map(
           (tab) => (
             <Box
               key={tab}
@@ -198,17 +251,11 @@ const VenueDetail = () => {
         )}
       </Box>
 
-      {activeTab === "Thông tin chung" && <VenueInfoSection selectedVenue={selectedVenue} />}
-      {activeTab === "Dịch vụ" && (
-        <VenueServicesSection
-          services={services}
-          setServices={setServices}
-          showAddService={showAddService}
-          setShowAddService={setShowAddService}
-          newService={newService}
-          setNewService={setNewService}
-        />
-      )}
+      {activeTab === "Thông tin chung" && (
+        <VenueInfoSection 
+          selectedVenue={selectedVenue}
+          setSelectedVenue={setSelectedVenue} />)}
+      
       {activeTab === "Hình ảnh" && (
         <VenueImagesSection
           venueId={venueId}
@@ -242,6 +289,10 @@ const VenueDetail = () => {
           editCourtHours={editCourtHours}
           setEditCourtHours={setEditCourtHours}
           addCourtRef={addCourtRef}
+          newCourtSchedules={newCourtSchedules}
+          setNewCourtSchedules={setNewCourtSchedules}
+          editSchedules={editSchedules}
+          setEditSchedules={setEditSchedules}
         />
       )}
 

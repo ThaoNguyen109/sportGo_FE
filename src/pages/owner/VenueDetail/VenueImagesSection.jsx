@@ -107,17 +107,16 @@ const VenueImagesSection = ({
 
       const venueData = res.data.data;
 
-      const imageList = venueData.images || [];
-
-      setImages(imageList);
-
-      if (imageList.length > 0) {
-
+      if (venueData.image) {
         setCoverImage(
-          `http://localhost:8000/storage/${imageList[0].image_url}`
+          `http://localhost:8000/storage/${venueData.image}`
         );
-
+      } else {
+        setCoverImage(null);
       }
+
+      // Danh sách ảnh phụ
+      setImages(venueData.images || []);
 
     } catch (error) {
 
@@ -171,7 +170,7 @@ const VenueImagesSection = ({
         </Button>
       </Box>
 
-      <Box
+      {/* <Box
         sx={{
           mb: 3,
           borderRadius: 2,
@@ -196,6 +195,8 @@ const VenueImagesSection = ({
           Ảnh bìa
         </Typography>
         <Box>
+
+          
           <Button
             variant="contained"
             onClick={() => coverInputRef.current?.click()}
@@ -218,6 +219,9 @@ const VenueImagesSection = ({
           ref={coverInputRef}
           onChange={handleCoverUpload}
         />
+        */}
+
+
         <input
           type="file"
           accept="image/*"
@@ -225,9 +229,6 @@ const VenueImagesSection = ({
           ref={imageInputRef}
           onChange={handleImageUpload}
         />
-      </Box>
-
-
       <Box
         sx={{
           border: "1px solid #e2e8f0",

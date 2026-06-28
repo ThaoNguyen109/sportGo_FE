@@ -23,6 +23,7 @@ import {
 
 import { useEffect, useState } from "react";
 import axiosClient from "../../../api/axiosClient";
+import CourtScheduleEditor from "./CourtScheduleEditor";
 
 const dayMap = {
   1: "Thứ 2",
@@ -32,6 +33,57 @@ const dayMap = {
   5: "Thứ 6",
   6: "Thứ 7",
   7: "Chủ nhật",
+};
+const defaultSchedule = {
+  T2: [
+    {
+      start: "06:00",
+      end: "10:00",
+      price: "200k",
+    },
+  ],
+  T3: [
+    {
+      start: "06:00",
+      end: "10:00",
+      price: "200k",
+    },
+  ],
+  T4: [
+    {
+      start: "06:00",
+      end: "10:00",
+      price: "200k",
+    },
+  ],
+  T5: [
+    {
+      start: "06:00",
+      end: "10:00",
+      price: "200k",
+    },
+  ],
+  T6: [
+    {
+      start: "06:00",
+      end: "10:00",
+      price: "200k",
+    },
+  ],
+  T7: [
+    {
+      start: "06:00",
+      end: "10:00",
+      price: "200k",
+    },
+  ],
+  CN: [
+    {
+      start: "08:00",
+      end: "10:00",
+      price: "250k",
+    },
+  ],
 };
 
 const VenueCourtsSection = ({
@@ -46,12 +98,6 @@ const VenueCourtsSection = ({
   newCourtName,
   setNewCourtName,
 
-  newCourtPrices,
-  setNewCourtPrices,
-
-  newCourtHours,
-  setNewCourtHours,
-
   editCourtIndex,
   setEditCourtIndex,
 
@@ -60,12 +106,6 @@ const VenueCourtsSection = ({
 
   editCourtActive,
   setEditCourtActive,
-
-  editCourtPrices,
-  setEditCourtPrices,
-
-  editCourtHours,
-  setEditCourtHours,
 
   addCourtRef,
 }) => {
@@ -122,28 +162,24 @@ const VenueCourtsSection = ({
   }, [venueId, setCourts]);
 
   const [loadingAddCourt, setLoadingAddCourt] = useState(false);
+  const [newCourtSchedule, setNewCourtSchedule] =
+    useState(defaultSchedule);
+  const [currentEditSchedule, setCurrentEditSchedule] =
+    useState(defaultSchedule);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentEditField, setCurrentEditField] = useState(null);
   const [currentEditName, setCurrentEditName] = useState("");
   const [currentEditActive, setCurrentEditActive] = useState(true);
-  const [currentEditPrices, setCurrentEditPrices] = useState({
-    1: "",
-    2: "",
-    3: "",
-    4: "",
-    5: "",
-    6: "",
-    7: "",
-  });
-  const [currentEditHours, setCurrentEditHours] = useState({
-    1: "06:00-22:00",
-    2: "06:00-22:00",
-    3: "06:00-22:00",
-    4: "06:00-22:00",
-    5: "06:00-22:00",
-    6: "06:00-22:00",
-    7: "08:00-20:00",
-  });
+  useEffect(() => {
+    if (editModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [editModalOpen]);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -162,38 +198,24 @@ const VenueCourtsSection = ({
     setCurrentEditName(court.name || "");
     setCurrentEditActive(Boolean(court.active));
 
-    const prices = {
-      1: "",
-      2: "",
-      3: "",
-      4: "",
-      5: "",
-      6: "",
-      7: "",
-    };
-    const hours = {
-      1: "06:00-22:00",
-      2: "06:00-22:00",
-      3: "06:00-22:00",
-      4: "06:00-22:00",
-      5: "06:00-22:00",
-      6: "06:00-22:00",
-      7: "08:00-20:00",
-    };
+    setCurrentEditSchedule(
+      payloadToSchedule(court.prices)
+    );
 
-    (court.prices || []).forEach((price) => {
-      prices[price.day_of_week] = price.price?.toString() || "";
-      hours[price.day_of_week] = `${price.start_time?.slice(0, 5)}-${price.end_time?.slice(0, 5)}`;
-    });
-
-    setCurrentEditPrices(prices);
-    setCurrentEditHours(hours);
+    setCurrentEditSchedule(
+        payloadToSchedule(court.prices)
+    );
     setEditModalOpen(true);
   };
 
   const closeEditModal = () => {
     setEditModalOpen(false);
     setCurrentEditField(null);
+    setCurrentEditSchedule(
+        JSON.parse(
+            JSON.stringify(defaultSchedule)
+        )
+    );
   };
 
   const parseHourMinute = (value) => {
@@ -217,15 +239,9 @@ const VenueCourtsSection = ({
   };
 
   const buildPricePayload = () => {
-    return dayOptions.map(({ day }) => {
-      const { start_time, end_time } = parseHourMinute(currentEditHours[day]);
-      return {
-        day_of_week: day,
-        start_time,
-        end_time,
-        price: parsePrice(currentEditPrices[day]),
-      };
-    });
+    return scheduleToPayload(
+      currentEditSchedule
+    );
   };
 
   const handleSaveEdit = async () => {
@@ -250,6 +266,7 @@ const VenueCourtsSection = ({
       );
 
       const payload = buildPricePayload();
+      console.log(payload);
 
       const res = await axiosClient.put(
         `/owner/prices/${currentEditField.id}`,
@@ -331,19 +348,95 @@ const VenueCourtsSection = ({
   const normalizeTime = (value) => {
     const raw = String(value || "").trim();
     if (!raw) {
-      return "06:00:00";
+      return "06:00";
     }
 
     const parts = raw.split(":").map((part) => part.trim());
-    if (parts.length === 2) {
-      return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}:00`;
+    if (parts.length >= 2) {
+      return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
     }
 
     if (parts.length === 3) {
       return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}:${parts[2].padStart(2, "0")}`;
     }
 
-    return "06:00:00";
+    return "06:00";
+  };
+  const scheduleToPayload = (schedule) => {
+    const result = [];
+    Object.entries(schedule).forEach(
+      ([day, slots]) => {
+        slots.forEach((slot) => {
+          result.push({
+            day_of_week:
+              dayMapping[day],
+            start_time:
+              normalizeTime(slot.start),
+            end_time:
+              normalizeTime(slot.end),
+            price:
+              parsePrice(slot.price),
+          });
+        });
+      }
+    );
+    return result;
+  };
+  const payloadToSchedule = (prices = []) => {
+    const schedule = {
+      T2: [],
+      T3: [],
+      T4: [],
+      T5: [],
+      T6: [],
+      T7: [],
+      CN: [],
+    };
+    prices.forEach((item) => {
+      const day = Object.keys(dayMapping).find(
+        (key) =>
+          dayMapping[key] === item.day_of_week
+      );
+      if (!day) return;
+      schedule[day].push({
+        start: item.start_time.slice(0, 5),
+        end: item.end_time.slice(0, 5),
+        price: item.price.toString(),
+      });
+    });
+    Object.keys(schedule).forEach((day) => {
+      if (schedule[day].length === 0) {
+        schedule[day] = [
+          {
+            start: "06:00",
+            end: "10:00",
+            price: "",
+          },
+        ];
+      }
+    });
+    return schedule;
+  };
+  const groupPricesByDay = (prices = []) => {
+    const grouped = {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+      5: [],
+      6: [],
+      7: [],
+    };
+    prices.forEach((item) => {
+      grouped[item.day_of_week].push(item);
+    });
+    // Sắp xếp theo giờ bắt đầu
+    Object.values(grouped).forEach((slots) => {
+      slots.sort((a, b) =>
+        a.start_time.localeCompare(b.start_time)
+      );
+    });
+    return grouped;
   };
 
   // Parse time range (e.g., "06:00-22:00" or "06:00:00-22:00:00") to { start_time: "06:00:00", end_time: "22:00:00" }
@@ -369,25 +462,20 @@ const VenueCourtsSection = ({
       }
 
       // Check if there are prices
-      const hasAnyPrice = Object.values(newCourtPrices).some(p => p);
-      if (!hasAnyPrice) {
-        alert("Vui lòng nhập giá cho ít nhất một ngày");
-        return;
-      }
+      const hasAnyPrice = Object.values(
+          newCourtSchedule
+      ).some((slots)=>
+          slots.some(
+              slot=>slot.price.trim()!==""
+          )
+      );
 
       setLoadingAddCourt(true);
 
       // Convert format for API - include all 7 days
-      const pricesForAPI = Object.entries(newCourtHours)
-        .map(([day, timeRange]) => {
-          const { start_time, end_time } = parseTimeRange(timeRange);
-          return {
-            day_of_week: dayMapping[day] || 1,
-            start_time,
-            end_time,
-            price: parsePrice(newCourtPrices[day]),
-          };
-        });
+      const pricesForAPI = scheduleToPayload(
+          newCourtSchedule
+      );
 
       if (pricesForAPI.length === 0) {
         alert("Vui lòng nhập thông tin cho sân");
@@ -412,25 +500,12 @@ const VenueCourtsSection = ({
 
       // Reset form
       setNewCourtName("");
-      setNewCourtPrices({
-        T2: "200k",
-        T3: "200k",
-        T4: "200k",
-        T5: "200k",
-        T6: "200k",
-        T7: "200k",
-        CN: "250k",
-      });
-      setNewCourtHours({
-        T2: "06:00-22:00",
-        T3: "06:00-22:00",
-        T4: "06:00-22:00",
-        T5: "06:00-22:00",
-        T6: "06:00-22:00",
-        T7: "06:00-22:00",
-        CN: "08:00-20:00",
-      });
       setShowAddForm(false);
+      setNewCourtSchedule(
+          JSON.parse(
+              JSON.stringify(defaultSchedule)
+          )
+      );
 
       // Refresh courts list
       const courtRes = await axiosClient.get(`/owner/courts/${venueId}`);
@@ -569,95 +644,11 @@ const VenueCourtsSection = ({
               >
                 Giờ hoạt động & Giá giờ theo ngày
               </Typography>
-
-              <TableContainer
-                component={Paper}
-                sx={{
-                  borderRadius: 2,
-                  boxShadow: "none",
-                  border: "1px solid #e2e8f0",
-                  mb: 1,
-                }}
-              >
-                <Table size="small">
-
-                  <TableHead>
-                    <TableRow>
-                      <TableCell
-                        sx={{
-                          fontWeight: 600,
-                          color: "#18643b",
-                        }}
-                      >
-                        Ngày
-                      </TableCell>
-
-                      <TableCell
-                        sx={{
-                          fontWeight: 600,
-                          color: "#18643b",
-                        }}
-                      >
-                        Giờ hoạt động
-                      </TableCell>
-
-                      <TableCell
-                        sx={{
-                          fontWeight: 600,
-                          color: "#18643b",
-                        }}
-                      >
-                        Giá giờ
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-
-                  <TableBody>
-
-                    {Object.keys(newCourtHours).map((day) => (
-
-                      <TableRow key={day}>
-
-                        <TableCell sx={{ fontWeight: 500 }}>
-                          {day}
-                        </TableCell>
-
-                        <TableCell>
-                          <TextField
-                            value={newCourtHours[day]}
-                            onChange={(e) =>
-                              setNewCourtHours((prev) => ({
-                                ...prev,
-                                [day]: e.target.value,
-                              }))
-                            }
-                            fullWidth
-                            size="small"
-                          />
-                        </TableCell>
-
-                        <TableCell>
-                          <TextField
-                            value={newCourtPrices[day]}
-                            onChange={(e) =>
-                              setNewCourtPrices((prev) => ({
-                                ...prev,
-                                [day]: e.target.value,
-                              }))
-                            }
-                            fullWidth
-                            size="small"
-                          />
-                        </TableCell>
-
-                      </TableRow>
-
-                    ))}
-
-                  </TableBody>
-
-                </Table>
-              </TableContainer>
+              <CourtScheduleEditor
+                schedule={newCourtSchedule}
+                setSchedule={setNewCourtSchedule}
+              />
+              
             </Box>
 
             {/* BUTTONS */}
@@ -707,7 +698,9 @@ const VenueCourtsSection = ({
       {/* LIST COURTS */}
       <Box display="grid" gap={2}>
 
-        {courts.map((court, index) => (
+        {courts.map((court, index) => {
+          const groupedPrices = groupPricesByDay(court.prices);
+          return (
 
           <Box
             key={`${court.name}-${index}`}
@@ -799,27 +792,31 @@ const VenueCourtsSection = ({
 
                     <TableBody>
 
-                      {court.prices?.map((price, index) => (
+  {Object.entries(groupedPrices).flatMap(([day, slots]) =>
 
-                        <TableRow key={index}>
+    slots.map((slot, index) => (
 
-                          <TableCell sx={{ fontWeight: 500 }}>
-                            {dayMap[price.day_of_week]}
-                          </TableCell>
+      <TableRow key={`${day}-${index}`}>
 
-                          <TableCell>
-                            {price.start_time} - {price.end_time}
-                          </TableCell>
+        <TableCell sx={{ fontWeight: 500 }}>
+          {index === 0 ? dayMap[day] : ""}
+        </TableCell>
 
-                          <TableCell>
-                            {Number(price.price).toLocaleString()}đ
-                          </TableCell>
+        <TableCell>
+          {slot.start_time} - {slot.end_time}
+        </TableCell>
 
-                        </TableRow>
+        <TableCell>
+          {Number(slot.price).toLocaleString()}đ
+        </TableCell>
 
-                      ))}
+      </TableRow>
 
-                    </TableBody>
+    ))
+
+  )}
+
+</TableBody>
 
                   </Table>
 
@@ -887,8 +884,10 @@ const VenueCourtsSection = ({
             </Box>
 
           </Box>
+          );
 
-        ))}
+
+        })}
 
       </Box>
 
@@ -913,9 +912,14 @@ const VenueCourtsSection = ({
           <Box
             onClick={(e) => e.stopPropagation()}
             sx={{
-              width: { xs: "100%", sm: "560px" },
+              width: "100%",
+              maxWidth: "900px",
+
+              maxHeight: "90vh",      // hoặc 80vh
+              overflowY: "auto", 
               bgcolor: "white",
               borderRadius: 3,
+          
               p: 3,
               boxShadow: "0 18px 60px rgba(15, 23, 42, 0.18)",
             }}
@@ -925,6 +929,7 @@ const VenueCourtsSection = ({
                 fontWeight: 700,
                 fontSize: 20,
                 mb: 2,
+                color:"#096737",
               }}
             >
               Chỉnh sửa sân con
@@ -942,7 +947,7 @@ const VenueCourtsSection = ({
               display="flex"
               alignItems="center"
               justifyContent="space-between"
-              sx={{ mt: 2 }}
+              sx={{ mt: 1 }}
             >
               <Typography sx={{ fontWeight: 600, color: "#374151" }}>
                 Trạng thái hoạt động
@@ -954,68 +959,15 @@ const VenueCourtsSection = ({
               />
             </Box>
 
-            <Box sx={{ mt: 3 }}>
-              <Typography sx={{ fontWeight: 600, mb: 2, color: "#1f2937" }}>
+            <Box sx={{ mt: 1 }}>
+              <Typography sx={{ fontWeight: 600, mb: 2, color: "#0b6439" }}>
                 Giờ hoạt động và giá giờ
               </Typography>
-
-              <TableContainer
-                component={Paper}
-                sx={{
-                  borderRadius: 2,
-                  boxShadow: "none",
-                  border: "1px solid #e2e8f0",
-                }}
-              >
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>
-                        Ngày
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>
-                        Giờ hoạt động
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>
-                        Giá giờ
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {dayOptions.map(({ day, label }) => (
-                      <TableRow key={day}>
-                        <TableCell sx={{ fontWeight: 500 }}>{label}</TableCell>
-                        <TableCell>
-                          <TextField
-                            value={currentEditHours[day]}
-                            onChange={(e) =>
-                              setCurrentEditHours((prev) => ({
-                                ...prev,
-                                [day]: e.target.value,
-                              }))
-                            }
-                            fullWidth
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            value={currentEditPrices[day]}
-                            onChange={(e) =>
-                              setCurrentEditPrices((prev) => ({
-                                ...prev,
-                                [day]: e.target.value,
-                              }))
-                            }
-                            fullWidth
-                            size="small"
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CourtScheduleEditor
+                  schedule={currentEditSchedule}
+                  setSchedule={setCurrentEditSchedule}
+              />
+              
             </Box>
 
             <Box sx={{ display: "flex", gap: 2, mt: 3, flexWrap: "wrap" }}>
@@ -1037,13 +989,17 @@ const VenueCourtsSection = ({
               <Button
                 variant="outlined"
                 sx={{
-                  textTransform: "none",
-                  borderColor: "#e2e8f0",
-                  color: "#475569",
-                  "&:hover": {
-                    borderColor: "#cbd5e1",
-                    background: "#f8fafc",
-                  },
+                  fontsize :"10px", 
+                  background: "#e71212 !important",
+                  backgroundColor: "#e71212 !important",
+                  color: "#f8f8f8 !important",
+                  boxShadow: "none !important",
+                  border: "none",
+
+                    "&:hover": {
+                      background: "#a10a0a !important",
+                      boxShadow: "none",
+                    },
                 }}
                 onClick={closeEditModal}
               >

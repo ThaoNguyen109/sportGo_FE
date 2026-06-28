@@ -201,7 +201,7 @@ const BookingManager = () => {
           <Typography sx={{ fontWeight: 600, color: "#166534" }}>
             Chi tiết booking theo khung giờ 
           </Typography>
-          <Typography fontSize={13} color="#6b7280">
+          <Typography fontSize={13} sx={{ color: "#000000" }}>
             Chọn cụm sân muốn xem chi tiết booking
           </Typography>
         </Box>
@@ -269,7 +269,7 @@ const BookingManager = () => {
           <Typography sx={{ fontWeight: 600, color: "#166534" }}>
             Bộ lọc & Tìm kiếm
           </Typography>
-          <Typography fontSize={13} color="#6b7280">
+          <Typography fontSize={13} sx={{ color: "#000000" }}>
             Sử dụng các bộ lọc để tìm kiếm booking nhanh hơn
           </Typography>
         </Box>
@@ -287,7 +287,7 @@ const BookingManager = () => {
             >
             {/* SEARCH */}
             <Box>
-                <Typography fontSize={13} mb={0.5} color="#374151">
+                <Typography fontSize={13} mb={0.5} sx={{ color: "#000000" }}>
                 Tìm kiếm
                 </Typography>
                 <TextField
@@ -308,7 +308,7 @@ const BookingManager = () => {
 
             {/* STATUS */}
             <Box>
-                <Typography fontSize={13} mb={0.5} color="#374151">
+                <Typography fontSize={13} mb={0.5} sx={{ color: "#000000" }}>
                 Trạng thái
                 </Typography>
                 <TextField
@@ -328,7 +328,7 @@ const BookingManager = () => {
 
             {/* LOCATION */}
             <Box>
-                <Typography fontSize={13} mb={0.5} color="#374151">
+                <Typography fontSize={13} mb={0.5} sx={{ color: "#000000" }}>
                 Địa điểm
                 </Typography>
                 <TextField
@@ -349,7 +349,7 @@ const BookingManager = () => {
 
             {/* FIELD GROUP */}
             <Box>
-                <Typography fontSize={13} mb={0.5} color="#374151">
+                <Typography fontSize={13} mb={0.5} sx={{ color: "#000000" }}>
                 Cụm sân
                 </Typography>
                 <TextField
@@ -370,7 +370,7 @@ const BookingManager = () => {
 
             {/* DATE */}
             <Box>
-                <Typography fontSize={13} mb={0.5} color="#374151">
+                <Typography fontSize={13} mb={0.5} sx={{ color: "#000000" }}>
                 Ngày đặt
                 </Typography>
                 <TextField
@@ -490,8 +490,10 @@ const BookingManager = () => {
             </Box>
           ) : (
             bookings.map((booking, index) => {
-              const courtName = getCourtSummary(booking.details);
-              const fieldName = getFieldSummary(booking.details);
+              const courtId = booking.details?.[0]?.field?.court_id;
+              const court = courts.find(c => c.id === courtId);
+              const venueName = court?.name  || "N/A";
+              const fieldName = booking.details?.[0]?.field?.name || "N/A";
               const bookingDate = booking.details?.[0]?.booking_date
                 ? new Date(booking.details[0].booking_date).toLocaleDateString("vi-VN")
                 : "-";
@@ -516,19 +518,27 @@ const BookingManager = () => {
                   }}
                 >
                   <Box>
-                    <Typography fontSize={14} fontWeight={500}>
+                    <Typography fontSize={14} fontWeight={500}sx={{ color: "#000000" }}>
                       {booking.user?.name || "Khách hàng"}
                     </Typography>
-                    <Typography fontSize={12} color="#6b7280">
+                    <Typography fontSize={12} sx={{ color: "#000000" }}>
                       {booking.user?.email || "-"}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography fontSize={14}>{courtName}</Typography>
-                    <Typography fontSize={12} color="#6b7280">
+                    
+                    <Typography fontWeight={600} sx={{ color: "#000000" }}>
+                      {venueName}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ color: "#000000"}}
+                    >
                       {fieldName}
                     </Typography>
+                                          
                   </Box>
 
                   <Box>{bookingDate}</Box>
@@ -555,6 +565,8 @@ const BookingManager = () => {
 
                   <Box display="flex" gap={1}>
                     <Button
+                      key={courtId}
+                      onClick={() => handleSelectCourt(court)}
                       size="small"
                       variant="outlined"
                       sx={{

@@ -8,6 +8,7 @@ import {
   ExpandMore,
   Add,
   Close,
+  Paid,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -21,10 +22,12 @@ const OwnerSidebar = () => {
   const [showAddVenueModal, setShowAddVenueModal] = useState(false);
   const [newVenueName, setNewVenueName] = useState("");
   const [newVenueSportType, setNewVenueSportType] = useState("Cầu lông");
-  const [newVenueMemberLimit, setNewVenueMemberLimit] = useState("");
-  const [newVenueMinBookingTime, setNewVenueMinBookingTime] = useState("30");
+  const [newVenuePhone, setNewVenuePhone] = useState("");
+  const [newVenueDescription, setNewVenueDescription] = useState("");
   const [newVenueActive, setNewVenueActive] = useState(true);
   const [newVenueAddress, setNewVenueAddress] = useState("");
+  const [newVenueImage, setNewVenueImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [newVenueHours, setNewVenueHours] = useState({
     T2: { open: "06:00", close: "22:00" },
     T3: { open: "06:00", close: "22:00" },
@@ -82,14 +85,14 @@ const OwnerSidebar = () => {
       path: "/owner/bookings",
     },
     {
-      label: "Quản lý khung giờ",
-      icon: <AccessTime fontSize="small" />,
-      path: "/owner/time",
-    },
-    {
-      label: "Thanh toán",
+      label: "Thanh Toán",
       icon: <Payment fontSize="small" />,
       path: "/owner/payment",
+    },
+    {
+      label: "Doanh thu",
+      icon: <Paid fontSize="small" />,
+      path: "/owner/revenue",
     },
     {
       label: "Quản lý địa điểm",
@@ -99,10 +102,19 @@ const OwnerSidebar = () => {
     
   ];
 
+  const handleChooseImage = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    setNewVenueImage(file);
+    setPreviewImage(URL.createObjectURL(file));
+  };
+
   return (
     <Box
       sx={{
-        width: 220,
+        width: 240,
         position: "fixed",
         top: 0,
         left: 0,
@@ -227,9 +239,9 @@ const OwnerSidebar = () => {
       <Box
         sx={{
           position: "absolute",
-          bottom: 20,
+          bottom: 0,
           left: 0,
-          width: 220,
+          width: 238,
           p: 2,
           borderTop: "1px solid #e5e7eb",
           display: "flex",
@@ -341,26 +353,59 @@ const OwnerSidebar = () => {
 
                   <Box>
                     <Typography sx={{ fontSize: 15, color: "gray", mb: 0.5 }}>
-                      Giới hạn thành viên:
+                     Số điện thoại:
                     </Typography>
                     <TextField
-                      value={newVenueMemberLimit}
-                      onChange={(e) => setNewVenueMemberLimit(e.target.value)}
+                      value={newVenuePhone}
+                      onChange={(e) => setNewVenuePhone(e.target.value)}
                       fullWidth
                       size="small"
+                    />
+                  </Box>
+            
+                  <Box>
+                    <Typography sx={{ fontSize: 15, color: "gray", mb: 0.5 }}>
+                      Mô tả ngắn gọn:
+                    </Typography>
+                    <TextField
+                      value={newVenueDescription}
+                      onChange={(e) => setNewVenueDescription(e.target.value)}
+                      fullWidth
+                      size="small"
+                      rows={2}
                     />
                   </Box>
 
                   <Box>
                     <Typography sx={{ fontSize: 15, color: "gray", mb: 0.5 }}>
-                      Thời gian đặt tối thiểu:
+                      Ảnh bìa sân:
                     </Typography>
+
                     <TextField
-                      value={newVenueMinBookingTime}
-                      onChange={(e) => setNewVenueMinBookingTime(e.target.value)}
+                      type="file"
                       fullWidth
                       size="small"
+                      inputProps={{
+                        accept: "image/*",
+                      }}
+                      onChange={handleChooseImage}
                     />
+
+                    {previewImage && (
+                      <Box
+                        component="img"
+                        src={previewImage}
+                        alt="Preview"
+                        sx={{
+                          mt: 2,
+                          width: "100%",
+                          height: 180,
+                          objectFit: "cover",
+                          borderRadius: 2,
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    )}
                   </Box>
 
                   <Box>
@@ -378,6 +423,7 @@ const OwnerSidebar = () => {
                       </Typography>
                     </Box>
                   </Box>
+
                 </Box>
               </Box>
 
@@ -461,6 +507,8 @@ const OwnerSidebar = () => {
                     formData.append("name", newVenueName);
 
                     formData.append("address", newVenueAddress);
+                    formData.append("phone", newVenuePhone);
+                    formData.append("description", newVenueDescription);
 
                     formData.append(
                       "open_time",
@@ -476,6 +524,9 @@ const OwnerSidebar = () => {
                       "is_active",
                       newVenueActive ? 1 : 0
                     );
+                    if (newVenueImage) {
+                      formData.append("image", newVenueImage);
+                    }
 
                     // QUAN TRỌNG
                     formData.append(

@@ -38,7 +38,7 @@ const OwnerHeader = () => {
     <Box
       sx={{
         height: 70,
-        width: "calc(100% - 300px)", // 👈 QUAN TRỌNG
+        width: "calc(100% - 240px)", // 👈 QUAN TRỌNG
         ml: "240px", // 👈 đẩy qua phải
         background: "linear-gradient(135deg, #2272af, #0eb64c)",
         color: "white",
