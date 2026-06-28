@@ -13,12 +13,12 @@ import { useState } from "react";
 import { Visibility, VisibilityOff, Email } from "@mui/icons-material";
 
 export default function Login() {
-const [email, setEmail] = useState("thuy5@gmail.com");
-const [password, setPassword] = useState("123456");
+// const [email, setEmail] = useState("thuy5@gmail.com");
+// const [password, setPassword] = useState("123456");
 
 
-  //const [email, setEmail] = useState("");
-  //const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
 
   
@@ -47,6 +47,12 @@ const [password, setPassword] = useState("123456");
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
+      );
+
+      // lưu trạng thái đăng nhập
+      localStorage.setItem(
+        "isLoggedIn",
+        "true"
       );
 
       // điều hướng theo role

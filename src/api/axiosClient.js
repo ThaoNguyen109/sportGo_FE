@@ -28,6 +28,8 @@ axiosClient.interceptors.response.use(
     // Nếu token hết hạn hoặc sai
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("user");
       window.location.href = "/login"; // redirect về login
     }
 

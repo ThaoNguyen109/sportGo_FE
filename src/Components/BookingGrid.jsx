@@ -224,12 +224,14 @@ function BookingGrid() {
                       );
                     }
 
-                    const isBooked = slot.status !== "available";
+                    const isBooked = slot.status === "booked";
+                    const isLocked = slot.status === "locked";
                     const isPast = isPastSlot(time.start);
 
                     let classNames = "slot";
                     if (isSelected) classNames += " selected";
                     if (isBooked) classNames += " booked";
+                    if (isLocked) classNames += " locked";
                     if (isPast) classNames += " disabled";
 
                     return (
@@ -238,7 +240,7 @@ function BookingGrid() {
                         className={classNames}
                         title={`${slot.start_time} - ${slot.end_time}`}
                         onClick={() => {
-                          if (!isBooked && !isPast) {
+                          if (!isBooked && !isLocked && !isPast) {
                             handleSelectSlot(field, slot);
                           }
                         }}

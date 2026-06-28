@@ -7,15 +7,14 @@ import Dashboard from "./pages/user/Dashboard";
 import DashboardOwner from "./pages/owner/DashboardOwner";
 import BookingManager from "./pages/owner/BookingManager";
 import VenueDetail from "./pages/owner/VenueDetail/VenueDetail";
-
-
-
+import BookingDetail from "./pages/owner/BookingDetail";
 
 import BookingPage from "./pages/user/BookingPage";  
 import BookingConfirmPage from "./pages/user/BookingConfirmPage";
 import PaymentConfirmPage from "./pages/user/PaymentConfirmPage";
 import ProfilePage from "./pages/user/ProfilePage";
 import BookingHistory from "./pages/user/BookingHistory";
+import BookingRefundPage from "./pages/user/BookingRefundPage";
 import RegisterPage from "./pages/user/RegisterPage";
 
 // Admin imports
@@ -40,12 +39,19 @@ function App() {
         <Route path="/owner" element={<DashboardOwner />} />
         <Route path="/owner/bookings" element={<BookingManager />} />
         <Route path="/owner/venues/:id" element={<VenueDetail />} />
+
+        <Route path="/owner/booking-detail"  element={<BookingDetail />}/>
+
+
         {/* route đặt sân */}
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/booking-confirm" element={<BookingConfirmPage />} />
         <Route path="/payment-confirm" element={<PaymentConfirmPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/booking/history" element={<BookingHistory />} />
+        <Route path="/booking/refund" element={<BookingRefundPage />} />
+
+
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />

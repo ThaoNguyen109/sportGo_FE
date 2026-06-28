@@ -1,5 +1,5 @@
 import React from "react";
-import BookingGrid from "../components/BookingGrid";
+import BookingGrid from "../Components/BookingGrid";
 
 function Booking() {
   return (

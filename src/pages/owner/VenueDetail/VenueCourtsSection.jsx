@@ -1,29 +1,469 @@
-import { Box, Typography, Button, IconButton, Switch, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { Add, Edit, Delete, Visibility } from "@mui/icons-material";
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  Switch,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+
+import {
+  Add,
+  Edit,
+  Delete,
+  Visibility,
+} from "@mui/icons-material";
+
+import { useEffect, useState } from "react";
+import axiosClient from "../../../api/axiosClient";
+
+const dayMap = {
+  1: "Thứ 2",
+  2: "Thứ 3",
+  3: "Thứ 4",
+  4: "Thứ 5",
+  5: "Thứ 6",
+  6: "Thứ 7",
+  7: "Chủ nhật",
+};
 
 const VenueCourtsSection = ({
+  venueId,
+
   courts,
   setCourts,
+
   showAddForm,
   setShowAddForm,
+
   newCourtName,
   setNewCourtName,
+
   newCourtPrices,
   setNewCourtPrices,
+
   newCourtHours,
   setNewCourtHours,
+
   editCourtIndex,
   setEditCourtIndex,
+
   editCourtName,
   setEditCourtName,
+
   editCourtActive,
   setEditCourtActive,
+
   editCourtPrices,
   setEditCourtPrices,
+
   editCourtHours,
   setEditCourtHours,
+
   addCourtRef,
 }) => {
+
+  /*
+  ============================================
+  FETCH DANH SÁCH SÂN CON
+  ============================================
+  */
+  useEffect(() => {
+
+    const fetchVenueFields = async () => {
+
+      try {
+
+        const res = await axiosClient.get(
+          `/owner/courts/${venueId}`
+        );
+
+        console.log("Venue detail:", res.data);
+
+        const venueData = res.data.data;
+
+        const mappedCourts = (venueData.fields || []).map(
+          (field) => ({
+
+            id: field.id,
+
+            name: field.name,
+
+            active: Boolean(field.is_active),
+
+            prices: field.prices || [],
+
+            operatingHours: {},
+
+            priceByDay: {},
+          })
+        );
+
+        setCourts(mappedCourts);
+
+      } catch (error) {
+
+        console.log("Lỗi lấy sân con:", error);
+
+      }
+    };
+
+    if (venueId) {
+      fetchVenueFields();
+    }
+
+  }, [venueId, setCourts]);
+
+  const [loadingAddCourt, setLoadingAddCourt] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [currentEditField, setCurrentEditField] = useState(null);
+  const [currentEditName, setCurrentEditName] = useState("");
+  const [currentEditActive, setCurrentEditActive] = useState(true);
+  const [currentEditPrices, setCurrentEditPrices] = useState({
+    1: "",
+    2: "",
+    3: "",
+    4: "",
+    5: "",
+    6: "",
+    7: "",
+  });
+  const [currentEditHours, setCurrentEditHours] = useState({
+    1: "06:00-22:00",
+    2: "06:00-22:00",
+    3: "06:00-22:00",
+    4: "06:00-22:00",
+    5: "06:00-22:00",
+    6: "06:00-22:00",
+    7: "08:00-20:00",
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const dayOptions = [
+    { day: 1, label: "Thứ 2" },
+    { day: 2, label: "Thứ 3" },
+    { day: 3, label: "Thứ 4" },
+    { day: 4, label: "Thứ 5" },
+    { day: 5, label: "Thứ 6" },
+    { day: 6, label: "Thứ 7" },
+    { day: 7, label: "Chủ nhật" },
+  ];
+
+  const openEditModal = (court) => {
+    setCurrentEditField(court);
+    setCurrentEditName(court.name || "");
+    setCurrentEditActive(Boolean(court.active));
+
+    const prices = {
+      1: "",
+      2: "",
+      3: "",
+      4: "",
+      5: "",
+      6: "",
+      7: "",
+    };
+    const hours = {
+      1: "06:00-22:00",
+      2: "06:00-22:00",
+      3: "06:00-22:00",
+      4: "06:00-22:00",
+      5: "06:00-22:00",
+      6: "06:00-22:00",
+      7: "08:00-20:00",
+    };
+
+    (court.prices || []).forEach((price) => {
+      prices[price.day_of_week] = price.price?.toString() || "";
+      hours[price.day_of_week] = `${price.start_time?.slice(0, 5)}-${price.end_time?.slice(0, 5)}`;
+    });
+
+    setCurrentEditPrices(prices);
+    setCurrentEditHours(hours);
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setCurrentEditField(null);
+  };
+
+  const parseHourMinute = (value) => {
+    const raw = String(value || "").trim();
+    if (!raw) {
+      return { start_time: "06:00", end_time: "22:00" };
+    }
+
+    const parts = raw.split("-").map((part) => part.trim());
+    const normalize = (time) => {
+      const segments = time.split(":").map((segment) => segment.trim());
+      const hour = segments[0] || "06";
+      const minute = segments[1] || "00";
+      return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+    };
+
+    return {
+      start_time: normalize(parts[0] || "06:00"),
+      end_time: normalize(parts[1] || "22:00"),
+    };
+  };
+
+  const buildPricePayload = () => {
+    return dayOptions.map(({ day }) => {
+      const { start_time, end_time } = parseHourMinute(currentEditHours[day]);
+      return {
+        day_of_week: day,
+        start_time,
+        end_time,
+        price: parsePrice(currentEditPrices[day]),
+      };
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!currentEditField) {
+      return;
+    }
+
+    if (!currentEditName.trim()) {
+      alert("Vui lòng nhập tên sân");
+      return;
+    }
+
+    setEditLoading(true);
+
+    try {
+      await axiosClient.put(
+        `/owner/fields/${currentEditField.id}`,
+        {
+          name: currentEditName.trim(),
+          is_active: currentEditActive,
+        }
+      );
+
+      const payload = buildPricePayload();
+
+      const res = await axiosClient.put(
+        `/owner/prices/${currentEditField.id}`,
+        { prices: payload }
+      );
+
+      const updatedField = res.data.data;
+
+      setCourts((prev) =>
+        prev.map((court) =>
+          court.id === updatedField.id
+            ? {
+                ...court,
+                name: currentEditName.trim(),
+                active: currentEditActive,
+                prices: updatedField.prices || court.prices,
+              }
+            : court
+        )
+      );
+
+      closeEditModal();
+      alert("Cập nhật sân con thành công");
+    } catch (error) {
+      console.error("Lỗi cập nhật sân con:", error);
+      const responseData = error.response?.data;
+      const errorMessages = responseData?.errors
+        ? Object.values(responseData.errors).flat().join(", ")
+        : responseData?.message || responseData?.error;
+      alert(`Lỗi: ${errorMessages || error.message || "Không thể cập nhật sân con."}`);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteField = async (fieldId) => {
+    if (!window.confirm("Bạn có chắc muốn xóa sân con này?")) {
+      return;
+    }
+
+    setDeleteLoading(fieldId);
+
+    try {
+      await axiosClient.delete(`/owner/fields/${fieldId}`);
+      setCourts((prev) => prev.filter((court) => court.id !== fieldId));
+      alert("Xóa sân con thành công");
+    } catch (error) {
+      console.error("Lỗi xóa sân con:", error);
+      const responseData = error.response?.data;
+      const errorMessages = responseData?.message || responseData?.error;
+      alert(`Lỗi: ${errorMessages || error.message || "Không thể xóa sân con."}`);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Mapping from day abbreviations to day_of_week numbers
+  const dayMapping = {
+    "T2": 1, "Thứ 2": 1,
+    "T3": 2, "Thứ 3": 2,
+    "T4": 3, "Thứ 4": 3,
+    "T5": 4, "Thứ 5": 4,
+    "T6": 5, "Thứ 6": 5,
+    "T7": 6, "Thứ 7": 6,
+    "CN": 7, "Chủ nhật": 7,
+  };
+
+  // Parse price (handle "200k" or "200000" format)
+  const parsePrice = (priceStr) => {
+    if (!priceStr) return 0;
+    const str = priceStr.toString().toLowerCase();
+    
+    if (str.includes("k")) {
+      return parseInt(str.replace("k", "")) * 1000;
+    }
+    return parseInt(str) || 0;
+  };
+
+  const normalizeTime = (value) => {
+    const raw = String(value || "").trim();
+    if (!raw) {
+      return "06:00:00";
+    }
+
+    const parts = raw.split(":").map((part) => part.trim());
+    if (parts.length === 2) {
+      return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}:00`;
+    }
+
+    if (parts.length === 3) {
+      return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}:${parts[2].padStart(2, "0")}`;
+    }
+
+    return "06:00:00";
+  };
+
+  // Parse time range (e.g., "06:00-22:00" or "06:00:00-22:00:00") to { start_time: "06:00:00", end_time: "22:00:00" }
+  const parseTimeRange = (timeRange) => {
+    if (!timeRange) {
+      return { start_time: "06:00:00", end_time: "22:00:00" };
+    }
+
+    const parts = timeRange.split("-").map((part) => part.trim());
+    return {
+      start_time: normalizeTime(parts[0] || "06:00"),
+      end_time: normalizeTime(parts[1] || "22:00"),
+    };
+  };
+
+  // Handle add court submission
+  const handleAddCourt = async () => {
+    try {
+      // Validation
+      if (!newCourtName.trim()) {
+        alert("Vui lòng nhập tên sân");
+        return;
+      }
+
+      // Check if there are prices
+      const hasAnyPrice = Object.values(newCourtPrices).some(p => p);
+      if (!hasAnyPrice) {
+        alert("Vui lòng nhập giá cho ít nhất một ngày");
+        return;
+      }
+
+      setLoadingAddCourt(true);
+
+      // Convert format for API - include all 7 days
+      const pricesForAPI = Object.entries(newCourtHours)
+        .map(([day, timeRange]) => {
+          const { start_time, end_time } = parseTimeRange(timeRange);
+          return {
+            day_of_week: dayMapping[day] || 1,
+            start_time,
+            end_time,
+            price: parsePrice(newCourtPrices[day]),
+          };
+        });
+
+      if (pricesForAPI.length === 0) {
+        alert("Vui lòng nhập thông tin cho sân");
+        setLoadingAddCourt(false);
+        return;
+      }
+
+      const payload = {
+        name: newCourtName.trim(),
+        prices: pricesForAPI,
+      };
+
+      console.log("Add court payload:", payload);
+
+      // Call API to add court
+      const res = await axiosClient.post(
+        `/owner/courts/${venueId}/fields`,
+        payload
+      );
+
+      console.log("Court added successfully:", res.data);
+
+      // Reset form
+      setNewCourtName("");
+      setNewCourtPrices({
+        T2: "200k",
+        T3: "200k",
+        T4: "200k",
+        T5: "200k",
+        T6: "200k",
+        T7: "200k",
+        CN: "250k",
+      });
+      setNewCourtHours({
+        T2: "06:00-22:00",
+        T3: "06:00-22:00",
+        T4: "06:00-22:00",
+        T5: "06:00-22:00",
+        T6: "06:00-22:00",
+        T7: "06:00-22:00",
+        CN: "08:00-20:00",
+      });
+      setShowAddForm(false);
+
+      // Refresh courts list
+      const courtRes = await axiosClient.get(`/owner/courts/${venueId}`);
+      const venueData = courtRes.data.data;
+      const mappedCourts = (venueData.fields || []).map((field) => ({
+        id: field.id,
+        name: field.name,
+        active: field.is_active === 1,
+        prices: field.prices || [],
+        operatingHours: {},
+        priceByDay: {},
+      }));
+      setCourts(mappedCourts);
+
+      alert("Thêm sân thành công!");
+
+    } catch (error) {
+      console.error("Error adding court:", error);
+      console.error("Server response:", error.response?.data);
+
+      const responseData = error.response?.data;
+      const status = error.response?.status;
+      const errorMessages = responseData?.errors
+        ? Object.values(responseData.errors).flat().join(", ")
+        : responseData?.message || responseData?.error;
+      const fallbackMessage = error.response?.statusText || error.message || "Lỗi khi thêm sân.";
+
+      alert(`Lỗi (${status || "?"}): ${errorMessages || fallbackMessage}`);
+    } finally {
+      setLoadingAddCourt(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -34,34 +474,62 @@ const VenueCourtsSection = ({
         boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+      {/* HEADER */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
         <Box>
-          <Typography sx={{ fontWeight: 600, fontSize: 20, color: "#18643b" }}>
+          <Typography
+            sx={{
+              fontWeight: 600,
+              fontSize: 20,
+              color: "#18643b",
+            }}
+          >
             Danh sách sân
           </Typography>
-          <Typography sx={{ fontSize: 15, color: "gray" }}>
+
+          <Typography
+            sx={{
+              fontSize: 15,
+              color: "gray",
+            }}
+          >
             Quản lý các sân cầu lông và thêm sân mới.
           </Typography>
         </Box>
+
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => {
             setShowAddForm((prev) => !prev);
+
             setTimeout(() => {
-              addCourtRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              addCourtRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
             }, 50);
           }}
           sx={{
             textTransform: "none",
             background: "#22c55e",
-            "&:hover": { background: "#16a34a" },
-          }}
-        >
+
+            "&:hover": {
+              background: "#16a34a",
+            },
+          }}>
           {showAddForm ? "Đóng form" : "Thêm sân mới"}
         </Button>
       </Box>
 
+      {/* FORM THÊM */}
       {showAddForm && (
         <Box
           ref={addCourtRef}
@@ -73,34 +541,87 @@ const VenueCourtsSection = ({
             background: "#eff6ff",
           }}
         >
-          <Typography sx={{ fontWeight: 600, mb: 2 }}>Thông tin sân mới</Typography>
+          <Typography sx={{ fontWeight: 600, mb: 2 }}>
+            Thông tin sân mới
+          </Typography>
 
           <Box display="grid" gap={2}>
+
             <TextField
               label="Tên sân"
               value={newCourtName}
-              onChange={(e) => setNewCourtName(e.target.value)}
+              onChange={(e) =>
+                setNewCourtName(e.target.value)
+              }
               fullWidth
               size="small"
             />
 
             <Box>
-              <Typography sx={{ fontWeight: 540, fontSize: 16, mb: 1, color: "#18643b", mt: 3 }}>
+              <Typography
+                sx={{
+                  fontWeight: 540,
+                  fontSize: 16,
+                  mb: 1,
+                  color: "#18643b",
+                  mt: 3,
+                }}
+              >
                 Giờ hoạt động & Giá giờ theo ngày
               </Typography>
-              <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: "none", border: "1px solid #e2e8f0",mb: 1 }}>
+
+              <TableContainer
+                component={Paper}
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: "none",
+                  border: "1px solid #e2e8f0",
+                  mb: 1,
+                }}
+              >
                 <Table size="small">
+
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>Ngày</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>Giờ hoạt động</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>Giá giờ</TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#18643b",
+                        }}
+                      >
+                        Ngày
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#18643b",
+                        }}
+                      >
+                        Giờ hoạt động
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#18643b",
+                        }}
+                      >
+                        Giá giờ
+                      </TableCell>
                     </TableRow>
                   </TableHead>
+
                   <TableBody>
+
                     {Object.keys(newCourtHours).map((day) => (
+
                       <TableRow key={day}>
-                        <TableCell sx={{ fontWeight: 500 }}>{day}</TableCell>
+
+                        <TableCell sx={{ fontWeight: 500 }}>
+                          {day}
+                        </TableCell>
+
                         <TableCell>
                           <TextField
                             value={newCourtHours[day]}
@@ -114,11 +635,374 @@ const VenueCourtsSection = ({
                             size="small"
                           />
                         </TableCell>
+
                         <TableCell>
                           <TextField
                             value={newCourtPrices[day]}
                             onChange={(e) =>
                               setNewCourtPrices((prev) => ({
+                                ...prev,
+                                [day]: e.target.value,
+                              }))
+                            }
+                            fullWidth
+                            size="small"
+                          />
+                        </TableCell>
+
+                      </TableRow>
+
+                    ))}
+
+                  </TableBody>
+
+                </Table>
+              </TableContainer>
+            </Box>
+
+            {/* BUTTONS */}
+            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+              <Button
+                variant="contained"
+                sx={{
+                  background: "#22c55e",
+                  textTransform: "none",
+                  "&:hover": {
+                    background: "#16a34a",
+                  },
+                  "&:disabled": {
+                    background: "#cbd5e1",
+                    color: "#64748b",
+                  },
+                }}
+                onClick={handleAddCourt}
+                disabled={loadingAddCourt}
+              >
+                {loadingAddCourt ? "Đang thêm..." : "Thêm sân"}
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  background: "#d52929",
+                  textTransform: "none",
+                  borderColor: "#e2e8f0",
+                  color: "#fdfeff",
+                  "&:hover": {
+                    borderColor: "#cbd5e1",
+                    color: "#fefefe",
+                  },
+                }}
+                onClick={() => setShowAddForm(false)}
+                disabled={loadingAddCourt}
+              >
+                Hủy
+              </Button>
+            </Box>
+
+          </Box>
+        </Box>
+      )}
+
+      {/* LIST COURTS */}
+      <Box display="grid" gap={2}>
+
+        {courts.map((court, index) => (
+
+          <Box
+            key={`${court.name}-${index}`}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: 2,
+              p: 2,
+              background: "white",
+              borderRadius: 2,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+              mb: 1,
+            }}
+          >
+
+            <Box sx={{ width: "100%", mb: 1 }}>
+
+              <Typography
+                sx={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: "#18643b",
+                }}
+              >
+                {court.name}
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: 15,
+                  color: "gray",
+                  mb: 1,
+                }}
+              >
+                Trạng thái:{" "}
+                {court.active
+                  ? "Hoạt động"
+                  : "Ngưng hoạt động"}
+              </Typography>
+
+              {/* TABLE GIÁ */}
+              <Box sx={{ mt: 1 }}>
+
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: "none",
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
+
+                  <Table size="small">
+
+                    <TableHead>
+
+                      <TableRow>
+
+                        <TableCell
+                          sx={{
+                            fontWeight: 600,
+                            color: "#18643b",
+                          }}
+                        >
+                          Ngày
+                        </TableCell>
+
+                        <TableCell
+                          sx={{
+                            fontWeight: 600,
+                            color: "#18643b",
+                          }}
+                        >
+                          Giờ hoạt động
+                        </TableCell>
+
+                        <TableCell
+                          sx={{
+                            fontWeight: 600,
+                            color: "#18643b",
+                          }}
+                        >
+                          Giá giờ
+                        </TableCell>
+
+                      </TableRow>
+
+                    </TableHead>
+
+                    <TableBody>
+
+                      {court.prices?.map((price, index) => (
+
+                        <TableRow key={index}>
+
+                          <TableCell sx={{ fontWeight: 500 }}>
+                            {dayMap[price.day_of_week]}
+                          </TableCell>
+
+                          <TableCell>
+                            {price.start_time} - {price.end_time}
+                          </TableCell>
+
+                          <TableCell>
+                            {Number(price.price).toLocaleString()}đ
+                          </TableCell>
+
+                        </TableRow>
+
+                      ))}
+
+                    </TableBody>
+
+                  </Table>
+
+                </TableContainer>
+
+              </Box>
+
+            </Box>
+
+            {/* ACTIONS */}
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={1}
+            >
+              <Switch
+                checked={court.active ?? false}
+                color="success"
+              />
+              <IconButton
+                size="small"
+                color="primary"
+                sx={{
+                  background: "white",
+                  color: "#2563eb",
+                  "&:hover": {
+                    background: "#f8fafc",
+                  },
+                }}
+              >
+                <Visibility fontSize="small" />
+              </IconButton>
+
+              <IconButton
+                size="small"
+                color="info"
+                sx={{
+                  background: "white",
+                  color: "#0ea5e9",
+                  "&:hover": {
+                    background: "#f8fafc",
+                  },
+                }}
+                onClick={() => openEditModal(court)}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+
+              <IconButton
+                size="small"
+                color="error"
+                sx={{
+                  background: "white",
+                  color: "#dc2626",
+                  "&:hover": {
+                    background: "#fef2f2",
+                  },
+                }}
+                onClick={() => handleDeleteField(court.id)}
+                disabled={deleteLoading === court.id}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+
+            </Box>
+
+          </Box>
+
+        ))}
+
+      </Box>
+
+      {editModalOpen && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: "blur(6px)",
+            zIndex: 1300,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 2,
+          }}
+          onClick={closeEditModal}
+        >
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              width: { xs: "100%", sm: "560px" },
+              bgcolor: "white",
+              borderRadius: 3,
+              p: 3,
+              boxShadow: "0 18px 60px rgba(15, 23, 42, 0.18)",
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: 20,
+                mb: 2,
+              }}
+            >
+              Chỉnh sửa sân con
+            </Typography>
+
+            <TextField
+              label="Tên sân"
+              value={currentEditName}
+              onChange={(e) => setCurrentEditName(e.target.value)}
+              fullWidth
+              size="small"
+            />
+
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mt: 2 }}
+            >
+              <Typography sx={{ fontWeight: 600, color: "#374151" }}>
+                Trạng thái hoạt động
+              </Typography>
+              <Switch
+                checked={currentEditActive}
+                onChange={(e) => setCurrentEditActive(e.target.checked)}
+                color="success"
+              />
+            </Box>
+
+            <Box sx={{ mt: 3 }}>
+              <Typography sx={{ fontWeight: 600, mb: 2, color: "#1f2937" }}>
+                Giờ hoạt động và giá giờ
+              </Typography>
+
+              <TableContainer
+                component={Paper}
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: "none",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>
+                        Ngày
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>
+                        Giờ hoạt động
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>
+                        Giá giờ
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {dayOptions.map(({ day, label }) => (
+                      <TableRow key={day}>
+                        <TableCell sx={{ fontWeight: 500 }}>{label}</TableCell>
+                        <TableCell>
+                          <TextField
+                            value={currentEditHours[day]}
+                            onChange={(e) =>
+                              setCurrentEditHours((prev) => ({
+                                ...prev,
+                                [day]: e.target.value,
+                              }))
+                            }
+                            fullWidth
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            value={currentEditPrices[day]}
+                            onChange={(e) =>
+                              setCurrentEditPrices((prev) => ({
                                 ...prev,
                                 [day]: e.target.value,
                               }))
@@ -134,59 +1018,34 @@ const VenueCourtsSection = ({
               </TableContainer>
             </Box>
 
-            <Box display="flex" gap={2}>
+            <Box sx={{ display: "flex", gap: 2, mt: 3, flexWrap: "wrap" }}>
               <Button
                 variant="contained"
-                onClick={() => {
-                  if (!newCourtName.trim()) return;
-                  setCourts((prev) => [
-                    ...prev,
-                    {
-                      name: newCourtName.trim(),
-                      active: true,
-                      priceByDay: { ...newCourtPrices },
-                      operatingHours: { ...newCourtHours },
-                    },
-                  ]);
-                  setNewCourtName("");
-                  setNewCourtPrices({
-                    T2: "",
-                    T3: "",
-                    T4: "",
-                    T5: "",
-                    T6: "",
-                    T7: "",
-                    CN: "",
-                  });
-                  setNewCourtHours({
-                    T2: "",
-                    T3: "",
-                    T4: "",
-                    T5: "",
-                    T6: "",
-                    T7: "",
-                    CN: "",
-                  });
-                  setShowAddForm(false);
-                }}
                 sx={{
-                  textTransform: "none",
                   background: "#22c55e",
-                  color: "white",
-                  "&:hover": { background: "#16a34a" },
+                  textTransform: "none",
+                  "&:hover": {
+                    background: "#16a34a",
+                  },
                 }}
+                onClick={handleSaveEdit}
+                disabled={editLoading}
               >
-                Lưu sân mới
+                {editLoading ? "Đang lưu..." : "Lưu"}
               </Button>
+
               <Button
-                variant="contained"
-                onClick={() => setShowAddForm(false)}
+                variant="outlined"
                 sx={{
                   textTransform: "none",
-                  background: "#22c55e",
-                  color: "white",
-                  "&:hover": { background: "#16a34a" },
+                  borderColor: "#e2e8f0",
+                  color: "#475569",
+                  "&:hover": {
+                    borderColor: "#cbd5e1",
+                    background: "#f8fafc",
+                  },
                 }}
+                onClick={closeEditModal}
               >
                 Hủy
               </Button>
@@ -195,244 +1054,6 @@ const VenueCourtsSection = ({
         </Box>
       )}
 
-      <Box display="grid" gap={2}>
-        {courts.map((court, index) => (
-          <Box
-            key={`${court.name}-${index}`}
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto",
-              gap: 2,
-              p: 2,
-              background: "white",
-              borderRadius: 2,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-              mb: 1,
-            }}
-          >
-            <Box sx={{ width: "100%", mb: 1 }}>
-              <Typography sx={{fontSize : 16, fontWeight: 600, color: "#18643b" }}>{court.name}</Typography>
-              <Typography sx={{ fontSize: 15, color: "gray", mb: 1 }}>
-                Trạng thái: {court.active ? "Hoạt động" : "Ngưng hoạt động"}
-              </Typography>
-              <Box sx={{ mt: 1 }}>
-                <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: "none", border: "1px solid #e2e8f0" }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>Ngày</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>Giờ hoạt động</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: "#18643b" }}>Giá giờ</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {Object.entries(court.operatingHours || {}).map(([day, hours]) => (
-                        <TableRow key={day}>
-                          <TableCell sx={{ fontWeight: 500 }}>{day}</TableCell>
-                          <TableCell>{hours || "-"}</TableCell>
-                          <TableCell>{court.priceByDay[day] || "-"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Switch
-                checked={court.active}
-                onChange={() =>
-                  setCourts((prev) =>
-                    prev.map((item, i) => (i === index ? { ...item, active: !item.active } : item))
-                  )
-                }
-                color="success"
-              />
-              <IconButton
-                size="small"
-                color="primary"
-                sx={{
-                  background: "white",
-                  color: "#2563eb",
-                  "&:hover": { background: "#f8fafc" },
-                }}
-              >
-                <Visibility fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                color="info"
-                onClick={() => {
-                  setEditCourtIndex(index);
-                  setEditCourtName(court.name);
-                  setEditCourtActive(court.active);
-                  setEditCourtPrices({ ...court.priceByDay });
-                  setEditCourtHours({ ...court.operatingHours });
-                }}
-                sx={{
-                  background: "white",
-                  color: "#0ea5e9",
-                  "&:hover": { background: "#f8fafc" },
-                }}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                color="error"
-                onClick={() => setCourts((prev) => prev.filter((_, i) => i !== index))}
-                sx={{
-                  background: "white",
-                  color: "#dc2626",
-                  "&:hover": { background: "#fef2f2" },
-                }}
-              >
-                <Delete fontSize="small" />
-              </IconButton>
-            </Box>
-          </Box>
-        ))}
-      </Box>
-
-      {editCourtIndex !== null && (
-        <Box
-          sx={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(15,23,42,0.45)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            p: 2,
-          }}
-        >
-          <Box
-            sx={{
-              width: "min(100%, 900px)",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              background: "white",
-              borderRadius: 3,
-              p: 3,
-              boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
-            }}
-          >
-            <Typography fontWeight={700} fontSize={18} mb={2}>
-              Chỉnh sửa thông tin sân
-            </Typography>
-
-            <Box sx={{ display: "grid", gap: 2 }}>
-              <TextField
-                label="Tên sân"
-                value={editCourtName}
-                onChange={(e) => setEditCourtName(e.target.value)}
-                fullWidth
-                size="small"
-              />
-
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography sx={{ fontWeight: 600, color: "#18643b" }}>Trạng thái</Typography>
-                <Switch
-                  checked={editCourtActive}
-                  onChange={(e) => setEditCourtActive(e.target.checked)}
-                  color="success"
-                />
-                <Typography sx={{ fontSize: 13, color: "gray" }}>
-                  {editCourtActive ? "Hoạt động" : "Ngưng hoạt động"}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-                <Box>
-                  <Typography sx={{ fontWeight: 600, mb: 1, color: "#18643b" }}>Giờ hoạt động</Typography>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 2 }}>
-                    {Object.entries(editCourtHours).map(([day, value]) => (
-                      <TextField
-                        key={day}
-                        label={day}
-                        value={value}
-                        onChange={(e) =>
-                          setEditCourtHours((prev) => ({
-                            ...prev,
-                            [day]: e.target.value,
-                          }))
-                        }
-                        fullWidth
-                        size="small"
-                      />
-                    ))}
-                  </Box>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 600, mb: 1, color: "#18643b" }}>Giờ hoạt động</Typography>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 2 }}>
-                    {Object.entries(editCourtPrices).map(([day, value]) => (
-                      <TextField
-                        key={day}
-                        label={day}
-                        value={value}
-                        onChange={(e) =>
-                          setEditCourtPrices((prev) => ({
-                            ...prev,
-                            [day]: e.target.value,
-                          }))
-                        }
-                        fullWidth
-                        size="small"
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
-
-              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
-                <Button
-                  variant="contained"
-                  onClick={() => setEditCourtIndex(null)}
-                  sx={{
-                    textTransform: "none",
-                    background: "#22c55e",
-                    color: "white",
-                    "&:hover": { background: "#16a34a" },
-                  }}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setCourts((prev) =>
-                      prev.map((court, i) =>
-                        i === editCourtIndex
-                          ? {
-                              ...court,
-                              name: editCourtName.trim(),
-                              active: editCourtActive,
-                              priceByDay: { ...editCourtPrices },
-                              operatingHours: { ...editCourtHours },
-                            }
-                          : court
-                      )
-                    );
-                    setEditCourtIndex(null);
-                  }}
-                  sx={{
-                    textTransform: "none",
-                    background: "#22c55e",
-                    color: "white",
-                    "&:hover": { background: "#16a34a" },
-                  }}
-                  disabled={!editCourtName.trim()}
-                >
-                  Lưu thay đổi
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 };
