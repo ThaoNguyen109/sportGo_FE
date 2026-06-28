@@ -22,7 +22,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminVenues from "./pages/admin/Venues";
 import AdminPayments from "./pages/admin/Payments";
-import BookingDetail from "./pages/admin/BookingDetail";
+import AdminBookingDetail from "./pages/admin/BookingDetail";
 import RefundPage from "./pages/admin/RefundPage";
 import PayoutManagement from "./pages/admin/PayoutManagement";
 import PayoutDetail from "./pages/admin/PayoutDetail";
@@ -58,7 +58,7 @@ function App() {
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/venues" element={<AdminVenues />} />
         <Route path="/admin/payments" element={<AdminPayments />} />
-        <Route path="/admin/payments/:bookingId" element={<BookingDetail />} />
+        <Route path="/admin/payments/:bookingId" element={<AdminBookingDetail />} />
         <Route path="/admin/payments/:bookingId/refund" element={<RefundPage />} />
         <Route path="/admin/payouts" element={<PayoutManagement />} />
         <Route path="/admin/payouts/pending/:ownerId" element={<PayoutDetail />} />
