@@ -42,6 +42,7 @@ function BookingManagerGrid() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const courtId = searchParams.get("court_id");
+  const [courts, setCourts] = useState([]);
 
   const handleSelectSlot = (court, time) => {
     const key = `${court}-${time}`;
@@ -77,9 +78,10 @@ function BookingManagerGrid() {
     fetchCourtPrices();
   }, [courtId]);
 
+ 
   useEffect(() => {
     const fetchCourtBookings = async () => {
-      if (!courtId || !selectedDate) {
+      if (!selectedDate) {
         setBookings([]);
         setBookedSlots(new Set());
         setSelectedBookedSlotInfo(null);
@@ -89,13 +91,8 @@ function BookingManagerGrid() {
       try {
         setLoadingBookings(true);
         setBookingError("");
-        const res = await axiosClient.get("/owner/bookings", {
-          params: {
-            court_id: courtId,
-            date: selectedDate,
-          },
-        });
-
+        const res = await axiosClient.get("/owner/bookings");
+        console.log("BOOKINGS =", res.data.data.data);
         const rootData = res.data?.data;
         const items = Array.isArray(rootData)
           ? rootData
@@ -110,6 +107,13 @@ function BookingManagerGrid() {
 
         items.forEach((booking) => {
           booking.details?.forEach((detail) => {
+            console.log({
+    selectedDate,
+    bookingDate: detail.booking_date,
+    field: detail.field?.name,
+    start: detail.start_time,
+    end: detail.end_time,
+});
             if (detail.booking_date !== selectedDate) return;
             const fieldName = detail.field?.name || detail.field_id || "Unknown";
             const slotTimes = [];
@@ -128,8 +132,12 @@ function BookingManagerGrid() {
               current = `${nextHour}:${nextMinute}`;
             }
 
+            console.log(fieldName, slotTimes);
             slotTimes.forEach((time) => {
               const key = `${fieldName}-${time}`;
+
+              console.log("BOOKED KEY:", key); 
+
               booked.add(key);
               bookingLookup[key] = {
                 booking,
@@ -139,10 +147,12 @@ function BookingManagerGrid() {
           });
         });
 
+        console.log([...booked]);
         setBookedSlots(booked);
         setSelectedBookedSlotInfo(null);
         setBookingLookup(bookingLookup);
       } catch (error) {
+        
         console.error("Lỗi lấy booking:", error);
         setBookingError("Không thể tải danh sách booking.");
         setBookedSlots(new Set());
@@ -172,6 +182,8 @@ function BookingManagerGrid() {
   const displayFields = fields.length
     ? fields
     : courts.map((name, index) => ({ id: index, name }));
+    console.log("FIELDS =", displayFields);
+    console.log(displayFields.map(f=>f.name));
 
   const priceRows = displayFields.flatMap((field) =>
     (field.prices || [])
@@ -186,7 +198,7 @@ function BookingManagerGrid() {
         fieldName: field.name,
         ...price,
       }))
-  );
+);
 
   const groupedEmptyFields = fields.filter(
     (field) => !(field.prices || []).some((price) => price.day_of_week === selectedDay)
@@ -218,7 +230,7 @@ function BookingManagerGrid() {
             type="date"
             className="booking-date"
             value={selectedDate}
-            min={today}
+            
             onChange={(e) => {
               setSelectedDate(e.target.value);
               setSelectedSlots([]);
@@ -246,6 +258,8 @@ function BookingManagerGrid() {
 
               {times.map((time) => {
                 const key = `${field.name}-${time}`;
+                
+
                 const isBooked = bookedSlots.has(key);
                 const isSelectedBookedSlot = selectedBookedSlotInfo?.slotKey === key;
                 const isPastSlot = (time) => {
@@ -257,14 +271,19 @@ function BookingManagerGrid() {
 
                   return slotDateTime <= now;
                 };
-
+                console.log(key, isBooked);
                 return (
                   <div
                     key={key}
-                    className={`slot ${isBooked ? "booked" : ""} ${isSelectedBookedSlot ? "active-booked" : ""} ${isPastSlot(time) ? "disabled" : ""}`}
-                    onClick={() => {
-                      if (isPastSlot(time)) return;
+                    className={`slot
+                      ${isBooked ? "booked" : ""}
+                      ${isSelectedBookedSlot ? "active-booked" : ""}
+                      ${!isBooked && isPastSlot(time) ? "disabled" : ""}
+                    `}
 
+                    onClick={() => {
+
+                      // Nếu ô đã đặt thì hiện thông tin booking
                       if (isBooked) {
                         if (bookingLookup[key]) {
                           setSelectedBookedSlotInfo({
@@ -272,12 +291,21 @@ function BookingManagerGrid() {
                             ...bookingLookup[key],
                           });
                         }
-                      } else {
-                        handleSelectSlot(field.name, time);
-                        setSelectedBookedSlotInfo(null);
+                        return;
                       }
+
+                      // Chỉ khóa các ô quá khứ chưa đặt
+                      if (isPastSlot(time)) return;
+
+                      // Ô còn trống
+                      handleSelectSlot(field.name, time);
+                      setSelectedBookedSlotInfo(null);
                     }}
-                  ></div>
+                    style={{
+                      backgroundColor: isBooked ? "red" : "white",
+                    }}
+                  >
+                  </div>
                 );
               })}
 

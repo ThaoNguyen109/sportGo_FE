@@ -1,4 +1,4 @@
-.booking-container {
+.booking-container1 {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -145,6 +145,7 @@
   filter: brightness(0.95);
 }
 
+
 .slot.active-booked {
   outline: 2px solid #7f1d1d;
 }
@@ -170,7 +171,7 @@
   background: #e5e7eb;
   cursor: not-allowed;
   opacity: 0.7;
-}
+} 
 .price-action {
   display: flex;
   justify-content: flex-end;

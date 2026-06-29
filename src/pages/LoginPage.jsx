@@ -265,6 +265,7 @@ export default function Login() {
           <Typography mt={3} textAlign="center" fontSize={14}>
             Chưa có tài khoản?{" "}
             <span
+              onClick={() => navigate("/register")}
               style={{
                 color: "#6366f1",
                 fontWeight: "bold",

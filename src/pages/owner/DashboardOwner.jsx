@@ -1,41 +1,125 @@
+import { useEffect, useState } from "react";
+
 import OwnerLayout from "../../Layouts/OwnerLayout";
-import { Box } from "@mui/material";
 import OwnerCard from "../../Components/OwnerCard";
+import axiosClient from "../../api/axiosClient";
+
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
+    Box,
+    CircularProgress,
+} from "@mui/material";
+import PaidIcon from "@mui/icons-material/Paid";
+import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import StadiumIcon from "@mui/icons-material/Stadium";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+
+import {
   ResponsiveContainer,
-} from "recharts";
-import {
+
   PieChart,
   Pie,
   Cell,
   Legend,
+
+  BarChart,
+  Bar,
+  LabelList,
+
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
 } from "recharts";
 
 
-const data = [
-  { name: "1/1", san1: 14, san2: 8, san3: 3 },
-  { name: "2/1", san1: 15, san2: 9, san3: 3.5 },
-  { name: "3/1", san1: 11, san2: 7, san3: 3 },
-  { name: "4/1", san1: 18, san2: 10, san3: 4.5 },
-  { name: "5/1", san1: 13, san2: 8.5, san3: 4 },
-  { name: "6/1", san1: 12, san2: 8.5, san3: 3.5 },
-  { name: "7/1", san1: 14, san2: 9, san3: 3.5 },
-];
-const pieData = [
-  { name: "Thành công", value: 75 },
-  { name: "Thất bại", value: 25 },
-];
-
-const COLORS = ["#22c55e", "#ef4444"]; // xanh + đỏ
+const COLORS = [ "#22c55e","#f59e0b", "#ef4444", "#3b82f6",]; // xanh + đỏ
 
 
 //npm install recharts
 const DashboardOwner = () => {
+
+  const [loading, setLoading] = useState(true);
+  const [dashboard, setDashboard] = useState({});
+  const [courts, setCourts] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [bookingStatusData, setBookingStatusData] = useState([]);
+  const [payoutData, setPayoutData] = useState([]);
+  const [statistics, setStatistics] = useState({
+      totalRevenue: 0,
+      totalBookings: 0,
+      totalCourts: 0,
+      totalFields: 0,
+  });
+  const formatMoney = (money) => {
+    return Number(money || 0).toLocaleString("vi-VN") + " đ";
+  };
+  const loadDashboard = async () => {
+    try {
+      const [
+        dashboardRes,
+        statsRes,
+        revenueRes
+      ] = await Promise.all([
+        axiosClient.get("/owner/bookings/dashboard"),
+        axiosClient.get("/owner/bookings/stats"),
+        axiosClient.get("/owner/bookings/revenue?type=day")
+      ]);
+        setDashboard(dashboardRes.data.data);
+        const stats = statsRes.data.data;
+        setBookingStatusData([
+            {
+              name: "Đã thanh toán",
+              value: stats.paid
+            },
+            {
+              name: "Đang chờ",
+              value: stats.pending
+            },
+            {
+              name: "Đã hủy",
+              value: stats.cancelled
+            },
+            {
+              name: "Hoàn tiền",
+              value: stats.refunded
+            }
+        ]);
+        const courts = revenueRes.data.data.courts;
+        setRevenueData(
+          courts.map(item => ({
+            label: item.name,
+             revenue: Number(item.revenue)
+          }))
+        );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(()=>{
+    loadDashboard();
+  },[]);
+
+  if(loading){
+    return(
+        <OwnerLayout>
+            <Box
+                sx={{
+                    display:"flex",
+                    justifyContent:"center",
+                    alignItems:"center",
+                    height:"80vh",
+                }}
+            >
+                <CircularProgress/>
+            </Box>
+        </OwnerLayout>
+    );
+  }
+  console.log("Revenue Data:", revenueData);
   return (
     <OwnerLayout>
       <Box
@@ -49,15 +133,43 @@ const DashboardOwner = () => {
           boxShadow: "2px 0 10px rgba(0,0,0,0.05)"
         }}
       >
-        <OwnerCard title="Lượt truy cập" value="0" sub="Đang hoạt động" titleColor="#18643b" />
-        <OwnerCard title="Số địa điểm" value="3" sub="Địa điểm" titleColor="#18643b" />
-        <OwnerCard title="Số sân" value="15" sub="Sân thể thao" titleColor="#18643b" />
-        <OwnerCard title="Đánh giá" value="4.5" sub="Trên 5 sao" titleColor="#18643b" />
+      <OwnerCard
+          icon={<PaidIcon />}
+          title="Booking hôm nay"
+          value={dashboard.today_bookings}
+          sub="Đã thanh toán"
+          titleColor="#18643b"
+      />
+
+      <OwnerCard
+          icon={<EventAvailableIcon />}
+          title="Tổng Booking"
+          value={dashboard.total_bookings}
+          sub="Lượt đặt sân"
+          titleColor="#2563eb"
+      />
+
+      <OwnerCard
+          icon={<StadiumIcon />}
+          title="Doanh thu hôm nay"
+          value={Number(
+                  dashboard.today_revenue || 0
+                ).toLocaleString()}
+          sub="VNĐ"
+          titleColor="#9333ea"
+      />
+
+      <OwnerCard
+          icon={<SportsSoccerIcon />}
+          title="Tổng doanh thu"
+          value={Number(
+                  dashboard.total_revenue || 0
+                ).toLocaleString()}
+          sub="VNĐ"
+          titleColor="#f59e0b"
+      />
       </Box>
 
-
-
-        
         <Box
           mt={3}
           sx={{
@@ -70,63 +182,124 @@ const DashboardOwner = () => {
           {/* PIE CHART */}
           <Box
             sx={{
-              background: "white",
-              borderRadius: 3,
-              p: 3,
-              height: 320,
-            }}
-          >
-            <Box fontWeight={600} mb={1}>
-              Tỉ lệ đặt lịch thành công
+                background: "white",
+                borderRadius: 3,
+                p: 3,
+                height: 360,
+                boxShadow: "0 6px 18px rgba(0,0,0,.06)",
+            }}>
+            <Box
+                fontWeight={700}
+                fontSize={18}
+                mb={1}
+            >
+                Tỷ lệ trạng thái Booking
             </Box>
-
-            <Box fontSize={13} color="gray" mb={2}>
-              Thống kê tỉ lệ đặt lịch thành công và thất bại
+            <Box
+                fontSize={13}
+                color="gray"
+                mb={3}
+            >
+                Thống kê theo trạng thái đặt sân
             </Box>
-
-            <ResponsiveContainer width="100%" height="75%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={index} fill={COLORS[index]} />
-                  ))}
-                </Pie>
-                <Legend />
-              </PieChart>
+            <ResponsiveContainer
+                width="100%"
+                height="80%"
+            >
+                <PieChart>
+                    <Pie
+                        data={bookingStatusData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={95}
+                        label
+                    >
+                      {
+                         bookingStatusData.map(
+                          (item,index)=>(
+                            <Cell
+                              key={index}
+                              fill={COLORS[index%COLORS.length]}
+                            />
+                          )
+                        )
+                      }
+                    </Pie>
+                    <Tooltip/>
+                    <Legend/>
+                </PieChart>
             </ResponsiveContainer>
-          </Box>
+        </Box>
 
           {/* LINE CHART */}
           <Box
             sx={{
-              background: "white",
-              borderRadius: 3,
-              p: 3,
-              height: 320,
-            }}
-          >
-            <Box mb={2} fontWeight={600}>
-              Doanh thu theo thời gian
+                background: "white",
+                borderRadius: 3,
+                p: 3,
+                height: 360,
+                boxShadow: "0 6px 18px rgba(0,0,0,.06)",
+            }}>
+            <Box
+                fontWeight={700}
+                fontSize={18}
+                mb={1}
+            >
+                Doanh thu theo thời gian
             </Box>
-
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-
-                <Line type="monotone" dataKey="san1" stroke="#3b82f6" strokeWidth={2} />
-                <Line type="monotone" dataKey="san2" stroke="#22c55e" strokeWidth={2} />
-                <Line type="monotone" dataKey="san3" stroke="#f59e0b" strokeWidth={2} />
-              </LineChart>
+            <Box
+                fontSize={13}
+                color="gray"
+                mb={3}
+            >
+                Thống kê doanh thu của owner
+            </Box>
+            <ResponsiveContainer
+              width="100%"
+              height="80%"
+            >
+              <BarChart
+                data={revenueData}
+                margin={{
+                  top: 20,
+                  right: 20,
+                  left: 10,
+                  bottom: 40,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="label"
+                    interval={0}
+                    angle={-15}
+                    textAnchor="end"
+                  />
+                  <YAxis />
+                    <Tooltip
+                      formatter={(value) => [
+                        `${Number(value).toLocaleString()} VNĐ`,
+                        "Doanh thu",
+                      ]}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="#22c55e"
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList
+                        dataKey="revenue"
+                        position="top"
+                        formatter={(value) =>
+                          Number(value).toLocaleString()
+                        }
+                      />
+                    </Bar>
+                </BarChart>
             </ResponsiveContainer>
           </Box>
+
 
         </Box>
 

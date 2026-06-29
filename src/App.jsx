@@ -3,6 +3,8 @@ import './index.css';
 
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/user/Dashboard";
+import OwnerRevenue from "./pages/owner/OwnerRevenue";
+import OwnerPayment from "./pages/owner/OwnerPayment";
 
 import DashboardOwner from "./pages/owner/DashboardOwner";
 import BookingManager from "./pages/owner/BookingManager";
@@ -41,7 +43,8 @@ function App() {
         <Route path="/owner/venues/:id" element={<VenueDetail />} />
 
         <Route path="/owner/booking-detail"  element={<BookingDetail />}/>
-
+        <Route path="/owner/revenue" element={<OwnerRevenue />} />
+        <Route path="/owner/payment" element={<OwnerPayment />} />
 
         {/* route đặt sân */}
         <Route path="/booking" element={<BookingPage />} />
