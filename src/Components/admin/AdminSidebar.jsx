@@ -28,7 +28,7 @@ function AdminSidebar() {
       <div className="sidebar-menu">
 
         <Link
-          to="/"
+          to="/admin"
           className="sidebar-link"
         >
           <FaChartPie />
@@ -43,13 +43,7 @@ function AdminSidebar() {
           Quản lý người dùng
         </Link>
 
-        <Link
-          to="/admin/sports"
-          className="sidebar-link"
-        >
-          <FaFutbol />
-          Quản lý loại thể thao
-        </Link>
+
 
         <Link
           to="/admin/venues"
@@ -65,6 +59,14 @@ function AdminSidebar() {
         >
           <FaMoneyBillWave />
           Quản lý thanh toán
+        </Link>
+
+        <Link
+          to="/admin/payouts"
+          className="sidebar-link"
+        >
+          <FaMoneyBillWave />
+          Quản lý payout
         </Link>
 
       </div>

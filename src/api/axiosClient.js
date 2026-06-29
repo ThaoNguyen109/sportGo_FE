@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
+dashboard-ui
   baseURL: "http://localhost:8000/api",
+
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+main
   headers: {
     "Content-Type": "application/json",
   },
@@ -28,6 +32,8 @@ axiosClient.interceptors.response.use(
     // Nếu token hết hạn hoặc sai
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("user");
       window.location.href = "/login"; // redirect về login
     }
 
