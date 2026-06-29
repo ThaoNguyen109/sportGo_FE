@@ -3,13 +3,13 @@ import './index.css';
 
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/user/Dashboard";
+import OwnerRevenue from "./pages/owner/OwnerRevenue";
+import OwnerPayment from "./pages/owner/OwnerPayment";
 
 import DashboardOwner from "./pages/owner/DashboardOwner";
 import BookingManager from "./pages/owner/BookingManager";
 import VenueDetail from "./pages/owner/VenueDetail/VenueDetail";
-
-
-
+import BookingDetail from "./pages/owner/BookingDetail";
 
 import BookingPage from "./pages/user/BookingPage";  
 import BookingConfirmPage from "./pages/user/BookingConfirmPage";
@@ -22,9 +22,13 @@ import RegisterPage from "./pages/user/RegisterPage";
 // Admin imports
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
-import AdminSports from "./pages/admin/Sports";
 import AdminVenues from "./pages/admin/Venues";
 import AdminPayments from "./pages/admin/Payments";
+import AdminBookingDetail from "./pages/admin/BookingDetail";
+import RefundPage from "./pages/admin/RefundPage";
+import PayoutManagement from "./pages/admin/PayoutManagement";
+import PayoutDetail from "./pages/admin/PayoutDetail";
+import PayoutHistory from "./pages/admin/PayoutHistory";
 
 function App() {
   return (
@@ -37,6 +41,11 @@ function App() {
         <Route path="/owner" element={<DashboardOwner />} />
         <Route path="/owner/bookings" element={<BookingManager />} />
         <Route path="/owner/venues/:id" element={<VenueDetail />} />
+
+        <Route path="/owner/booking-detail"  element={<BookingDetail />}/>
+        <Route path="/owner/revenue" element={<OwnerRevenue />} />
+        <Route path="/owner/payment" element={<OwnerPayment />} />
+
         {/* route đặt sân */}
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/booking-confirm" element={<BookingConfirmPage />} />
@@ -47,11 +56,17 @@ function App() {
 
 
         {/* Admin routes */}
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/sports" element={<AdminSports />} />
         <Route path="/admin/venues" element={<AdminVenues />} />
         <Route path="/admin/payments" element={<AdminPayments />} />
+        <Route path="/admin/payments/:bookingId" element={<AdminBookingDetail />} />
+        <Route path="/admin/payments/:bookingId/refund" element={<RefundPage />} />
+        <Route path="/admin/payouts" element={<PayoutManagement />} />
+        <Route path="/admin/payouts/pending/:ownerId" element={<PayoutDetail />} />
+        <Route path="/admin/payouts/confirm/:payoutId" element={<PayoutDetail />} />
+        <Route path="/admin/payout-history" element={<PayoutHistory />} />
       </Routes>
     </BrowserRouter>
   );

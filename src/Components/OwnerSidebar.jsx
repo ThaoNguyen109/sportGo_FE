@@ -8,9 +8,13 @@ import {
   ExpandMore,
   Add,
   Close,
+  Paid,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axiosClient from "../api/axiosClient";
+
+
 
 const OwnerSidebar = () => {
   const navigate = useNavigate();
@@ -18,10 +22,12 @@ const OwnerSidebar = () => {
   const [showAddVenueModal, setShowAddVenueModal] = useState(false);
   const [newVenueName, setNewVenueName] = useState("");
   const [newVenueSportType, setNewVenueSportType] = useState("Cầu lông");
-  const [newVenueMemberLimit, setNewVenueMemberLimit] = useState("");
-  const [newVenueMinBookingTime, setNewVenueMinBookingTime] = useState("30");
+  const [newVenuePhone, setNewVenuePhone] = useState("");
+  const [newVenueDescription, setNewVenueDescription] = useState("");
   const [newVenueActive, setNewVenueActive] = useState(true);
   const [newVenueAddress, setNewVenueAddress] = useState("");
+  const [newVenueImage, setNewVenueImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [newVenueHours, setNewVenueHours] = useState({
     T2: { open: "06:00", close: "22:00" },
     T3: { open: "06:00", close: "22:00" },
@@ -43,10 +49,29 @@ const OwnerSidebar = () => {
   };
 
   const [venues, setVenues] = useState([
-    { name: "Sân cầu lông Cảnh Hồ", id: 103 },
-    { name: "Đức Thảo", id: 104 },
-    { name: "DINKZONE", id: 105 },
   ]);
+
+  useEffect(() => {
+    const fetchOwnerCourts = async () => {
+      try {
+        const res = await axiosClient.get("/owner/courts");
+
+        console.log("API RESPONSE:", res.data);
+
+        if (res?.data?.data?.data && Array.isArray(res.data.data.data)) {
+          setVenues(res.data.data.data);
+        } else {
+          setVenues([]);
+        }
+
+      } catch (error) {
+        console.log("Lỗi lấy danh sách sân:", error);
+        setVenues([]);
+      }
+    };
+
+    fetchOwnerCourts();
+  }, []);
 
   const menu = [
     {
@@ -60,14 +85,14 @@ const OwnerSidebar = () => {
       path: "/owner/bookings",
     },
     {
-      label: "Quản lý khung giờ",
-      icon: <AccessTime fontSize="small" />,
-      path: "/owner/time",
-    },
-    {
-      label: "Thanh toán",
+      label: "Thanh Toán",
       icon: <Payment fontSize="small" />,
       path: "/owner/payment",
+    },
+    {
+      label: "Doanh thu",
+      icon: <Paid fontSize="small" />,
+      path: "/owner/revenue",
     },
     {
       label: "Quản lý địa điểm",
@@ -77,10 +102,19 @@ const OwnerSidebar = () => {
     
   ];
 
+  const handleChooseImage = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    setNewVenueImage(file);
+    setPreviewImage(URL.createObjectURL(file));
+  };
+
   return (
     <Box
       sx={{
-        width: 220,
+        width: 240,
         position: "fixed",
         top: 0,
         left: 0,
@@ -103,7 +137,7 @@ const OwnerSidebar = () => {
             pb: 1,
           }}
         >
-          Sport Booking
+          Sport Go
         </Typography>
       </Box>
 
@@ -141,7 +175,7 @@ const OwnerSidebar = () => {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                   {item.icon}
-                  <Typography fontSize={15}>{item.label}</Typography>
+                  <Typography sx ={{ fontSize: 15, color: "#18643b", fontWeight: 550 }}>{item.label}</Typography>
                 </Box>
                 {isVenue && (
                   <ExpandMore
@@ -155,7 +189,8 @@ const OwnerSidebar = () => {
 
               {isVenue && openVenue && (
                 <Box sx={{ pl: 3, mt: 1 }}>
-                  {venues.map((venue, index) => (
+                  {console.log("VENUES:", venues)}
+                  {Array.isArray(venues) && venues.map((venue, index) => (
                     <Typography
                       key={index}
                       onClick={() => navigate(`/owner/venues/${venue.id}`)}
@@ -204,9 +239,9 @@ const OwnerSidebar = () => {
       <Box
         sx={{
           position: "absolute",
-          bottom: 20,
+          bottom: 0,
           left: 0,
-          width: 220,
+          width: 238,
           p: 2,
           borderTop: "1px solid #e5e7eb",
           display: "flex",
@@ -318,26 +353,59 @@ const OwnerSidebar = () => {
 
                   <Box>
                     <Typography sx={{ fontSize: 15, color: "gray", mb: 0.5 }}>
-                      Giới hạn thành viên:
+                     Số điện thoại:
                     </Typography>
                     <TextField
-                      value={newVenueMemberLimit}
-                      onChange={(e) => setNewVenueMemberLimit(e.target.value)}
+                      value={newVenuePhone}
+                      onChange={(e) => setNewVenuePhone(e.target.value)}
                       fullWidth
                       size="small"
+                    />
+                  </Box>
+            
+                  <Box>
+                    <Typography sx={{ fontSize: 15, color: "gray", mb: 0.5 }}>
+                      Mô tả ngắn gọn:
+                    </Typography>
+                    <TextField
+                      value={newVenueDescription}
+                      onChange={(e) => setNewVenueDescription(e.target.value)}
+                      fullWidth
+                      size="small"
+                      rows={2}
                     />
                   </Box>
 
                   <Box>
                     <Typography sx={{ fontSize: 15, color: "gray", mb: 0.5 }}>
-                      Thời gian đặt tối thiểu:
+                      Ảnh bìa sân:
                     </Typography>
+
                     <TextField
-                      value={newVenueMinBookingTime}
-                      onChange={(e) => setNewVenueMinBookingTime(e.target.value)}
+                      type="file"
                       fullWidth
                       size="small"
+                      inputProps={{
+                        accept: "image/*",
+                      }}
+                      onChange={handleChooseImage}
                     />
+
+                    {previewImage && (
+                      <Box
+                        component="img"
+                        src={previewImage}
+                        alt="Preview"
+                        sx={{
+                          mt: 2,
+                          width: "100%",
+                          height: 180,
+                          objectFit: "cover",
+                          borderRadius: 2,
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    )}
                   </Box>
 
                   <Box>
@@ -355,10 +423,11 @@ const OwnerSidebar = () => {
                       </Typography>
                     </Box>
                   </Box>
+
                 </Box>
               </Box>
 
-              {/* RIGHT - OPENING HOURS */}
+              {/* RIGHT - OPENING HOURS
               <Box>
                 <Typography fontWeight={600} mb={2} sx={{ color: "#18643b", display: "flex", gap: 0.5 }}>
                   <Box sx={{ color: "#2563eb" }}>●</Box>
@@ -412,7 +481,7 @@ const OwnerSidebar = () => {
                     </Box>
                   ))}
                 </Box>
-              </Box>
+              </Box> */}
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
@@ -430,30 +499,96 @@ const OwnerSidebar = () => {
               </Button>
               <Button
                 variant="contained"
-                onClick={() => {
-                  if (newVenueName.trim()) {
-                    setVenues((prev) => [
-                      ...prev,
-                      {
-                        name: newVenueName.trim(),
-                        id: Date.now(),
-                      },
-                    ]);
-                    setNewVenueName("");
-                    setNewVenueSportType("Cầu lông");
-                    setNewVenueMemberLimit("");
-                    setNewVenueMinBookingTime("30");
-                    setNewVenueActive(true);
-                    setNewVenueHours({
-                      T2: { open: "06:00", close: "22:00" },
-                      T3: { open: "06:00", close: "22:00" },
-                      T4: { open: "06:00", close: "22:00" },
-                      T5: { open: "06:00", close: "22:00" },
-                      T6: { open: "06:00", close: "22:00" },
-                      T7: { open: "06:00", close: "22:00" },
-                      CN: { open: "08:00", close: "20:00" },
+                onClick={async () => {
+                  try {
+
+                    const formData = new FormData();
+
+                    formData.append("name", newVenueName);
+
+                    formData.append("address", newVenueAddress);
+                    formData.append("phone", newVenuePhone);
+                    formData.append("description", newVenueDescription);
+
+                    formData.append(
+                      "open_time",
+                      `${newVenueHours.T2.open}:00`
+                    );
+
+                    formData.append(
+                      "close_time",
+                      `${newVenueHours.T2.close}:00`
+                    );
+
+                    formData.append(
+                      "is_active",
+                      newVenueActive ? 1 : 0
+                    );
+                    if (newVenueImage) {
+                      formData.append("image", newVenueImage);
+                    }
+
+                    // QUAN TRỌNG
+                    formData.append(
+                      "fields[0][name]",
+                      "Sân 1"
+                    );
+
+                    const days = [1, 2, 3, 4, 5, 6, 7];
+
+                    days.forEach((day, index) => {
+
+                      formData.append(
+                        `fields[0][prices][${index}][start_time]`,
+                        "06:00:00"
+                      );
+
+                      formData.append(
+                        `fields[0][prices][${index}][end_time]`,
+                        "23:00:00"
+                      );
+
+                      formData.append(
+                        `fields[0][prices][${index}][price]`,
+                        100000
+                      );
+
+                      formData.append(
+                        `fields[0][prices][${index}][day_of_week]`,
+                        day
+                      );
+
+                      formData.append(
+                        `fields[0][prices][${index}][is_active]`,
+                        1
+                      );
                     });
+
+                    const res = await axiosClient.post(
+                      "/owner/courts",
+                      formData,
+                      {
+                        headers: {
+                          "Content-Type": "multipart/form-data",
+                        },
+                      }
+                    );
+
+                    console.log("Tạo sân thành công:", res.data);
+
+                    const createdCourt = res.data.data;
+
+                    setVenues((prev) => [...prev, createdCourt]);
+
                     setShowAddVenueModal(false);
+
+                  } catch (error) {
+
+                    console.log(error.response?.data);
+
+                    alert(
+                      JSON.stringify(error.response?.data, null, 2)
+                    );
                   }
                 }}
                 sx={{

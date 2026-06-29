@@ -13,12 +13,12 @@ import { useState } from "react";
 import { Visibility, VisibilityOff, Email } from "@mui/icons-material";
 
 export default function Login() {
-const [email, setEmail] = useState("thuy5@gmail.com");
-const [password, setPassword] = useState("123456");
+// const [email, setEmail] = useState("thuy5@gmail.com");
+// const [password, setPassword] = useState("123456");
 
 
-  //const [email, setEmail] = useState("");
-  //const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
 
   
@@ -265,6 +265,7 @@ const [password, setPassword] = useState("123456");
           <Typography mt={3} textAlign="center" fontSize={14}>
             Chưa có tài khoản?{" "}
             <span
+              onClick={() => navigate("/register")}
               style={{
                 color: "#6366f1",
                 fontWeight: "bold",
