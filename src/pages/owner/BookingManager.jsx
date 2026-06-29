@@ -12,6 +12,7 @@ import {
 import { Search, CalendarMonth } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 
+
 const BookingManager = () => {
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
@@ -24,6 +25,8 @@ const BookingManager = () => {
   const [courtFilter, setCourtFilter] = useState("");
   const [fieldFilter, setFieldFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const navigate = useNavigate();
 
@@ -47,6 +50,7 @@ const BookingManager = () => {
           })) || []
         )
       );
+      
     } catch (error) {
       console.error("Lỗi lấy danh sách sân owner:", error);
     }
@@ -166,7 +170,22 @@ const BookingManager = () => {
       state: { courtName: court.name },
     });
   };
+  const handleViewDetail = async (bookingId) => {
+    try {
+      setLoadingDetail(true);
 
+      const res = await axiosClient.get(`/owner/bookings/${bookingId}`);
+
+      // tùy response API
+      setSelectedBooking(res.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+  
+  
   return (
     <OwnerLayout>
       {/* ===== HEADER ===== */}
@@ -566,7 +585,7 @@ const BookingManager = () => {
                   <Box display="flex" gap={1}>
                     <Button
                       key={courtId}
-                      onClick={() => handleSelectCourt(court)}
+                      onClick={() => handleViewDetail(booking.id)}
                       size="small"
                       variant="outlined"
                       sx={{
@@ -588,6 +607,120 @@ const BookingManager = () => {
           )}
         </Box>
       </Box>
+      {selectedBooking && (
+        <Box
+          sx={{
+            mt: 3,
+            background: "#fff",
+            borderRadius: 3,
+            border: "1px solid #18643b97",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              background: "#eaf7ef",
+              p: 2,
+              borderBottom: "1px solid #49c08097",
+            }}
+          >
+            <Typography  sx={{ color: "#166534", fontWeight: 600 }}  >
+              Thông tin booking
+            </Typography>
+          </Box>
+
+          <Box sx={{ p: 3 }}>
+            <Typography sx={{ color: "#000000", fontWeight: 450}}>
+              <strong>Mã booking:</strong> {selectedBooking.id}
+            </Typography>
+
+            <Typography sx={{ color: "#000000", fontWeight: 450}}>
+              <strong>Khách hàng:</strong> {selectedBooking.user?.name}
+            </Typography>
+
+            <Typography sx={{ color: "#000000", fontWeight: 450}}>
+              <strong>Email:</strong> {selectedBooking.user?.email}
+            </Typography>
+
+            <Typography sx={{ color: "#000000", fontWeight: 450}}>
+              <strong>SĐT:</strong> {selectedBooking.user?.phone}
+            </Typography>
+
+            <Typography sx={{ color: "#000000", fontWeight: 450}}>
+              <strong>Tổng tiền:</strong>{" "}
+              {Number(selectedBooking.total_price).toLocaleString("vi-VN")}đ
+            </Typography>
+
+            <Typography sx={{ color: "#000000", fontWeight: 450}}>
+              <strong>Trạng thái:</strong> {selectedBooking.status}
+            </Typography>
+
+            <Box sx={{ mt: 3 }}>
+              <Typography sx={{ color: "#166534", fontWeight: 600 }}>
+                Danh sách sân đã đặt
+              </Typography>
+
+              {selectedBooking.details?.map((detail) => (
+                <Box
+                  key={detail.id}
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography sx={{ color: "#000000", fontWeight: 450 }}>
+                    <strong>Sân:</strong> {detail.field?.name}
+                  </Typography>
+
+                  <Typography sx={{ color: "#000000", fontWeight: 450 }}  >
+                    <strong>Cụm sân:</strong> {detail.field?.court?.name}
+                  </Typography>
+
+                  <Typography sx={{ color: "#000000", fontWeight: 450}}>
+                    <strong>Ngày:</strong> {detail.booking_date}
+                  </Typography>
+
+                  <Typography sx={{ color: "#000000", fontWeight: 450}}>
+                    <strong>Khung giờ:</strong> {detail.start_time} - {detail.end_time}
+                  </Typography>
+
+                  <Typography sx={{ color: "#000000", fontWeight: 450}}>
+                    <strong>Giá:</strong>{" "}
+                    {Number(detail.price ?? 0).toLocaleString("vi-VN")}đ
+                  </Typography>
+                </Box>
+              ))}
+
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => setSelectedBooking(null)}
+                  sx={{
+                            fontsize :"10px", 
+                            background: "transparent !important",
+                            backgroundColor: "#f01010 !important",
+                            color: "#ffffff !important",
+                            boxShadow: "none !important",
+                            border: "none",
+
+                            "&:hover": {
+                                background: "#f1f5f9 !important",
+                                boxShadow: "none",
+                            },
+                        }}          
+                >
+                  Đóng
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      )}
+      
     </OwnerLayout>
   );
 };
