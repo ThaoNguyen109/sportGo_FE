@@ -289,7 +289,7 @@ function Payments() {
                           </div>
 
 
-                          {(["cancelled", "cancel", "canceled"].includes(booking?.status) || booking?.cancel_reason) && (
+                          {(["cancelled", "cancel", "canceled", "refunded"].includes(booking?.status) || booking?.cancel_reason) && (
                             <button
                               type="button"
                               className="btn btn-sm btn-danger rounded-pill px-3 mt-md-1"

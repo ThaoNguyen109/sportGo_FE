@@ -9,9 +9,7 @@ import {
   FaSpinner,
   FaMapMarkerAlt,
   FaStore,
-  FaInfoCircle,
 } from "react-icons/fa";
-
 
 function Venues() {
   const [courts, setCourts] = useState([]);
@@ -23,34 +21,32 @@ function Venues() {
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
 
-
+  // Hàm fetch dữ liệu từ API công khai
   const fetchCourts = async () => {
     try {
       setLoading(true);
-      // We can query with filters
       let url = "/admin/courts";
       const params = new URLSearchParams();
       if (statusFilter !== "all") {
         params.append("status", statusFilter);
       }
-      if (searchTerm) {
-        params.append("search", searchTerm);
+      if (searchTerm.trim()) {
+        params.append("search", searchTerm.trim());
       }
-     
+
       const res = await axiosClient.get(`${url}?${params.toString()}`);
-      // getAllCourts returns paginated data: res.data.data.data
       const courtsList = res.data.data?.data || res.data.data || [];
       setCourts(courtsList);
     } catch (err) {
       console.error("Error fetching courts:", err);
-      // Mockup fallbacks
+      // Mockup fallbacks khi API lỗi
       setCourts([
         {
           id: 1,
           name: "Sân Bóng Đá Mini Rạch Miễu",
           address: "Hoa Phượng, Phú Nhuận, TPHCM",
           status: "pending",
-          is_active: true,
+          is_active: false,
           owner: { name: "Nguyễn Văn Chủ Sân", email: "owner@gmail.com" },
           description: "Sân cỏ nhân tạo chất lượng cao, có ánh sáng ban đêm.",
         },
@@ -69,43 +65,60 @@ function Venues() {
     }
   };
 
-
+  // Tự động tìm kiếm / lọc khi thay đổi bộ lọc hoặc từ khóa (kèm Debounce 500ms cho ô tìm kiếm)
   useEffect(() => {
-    fetchCourts();
-  }, [statusFilter]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchCourts();
+    }, 500);
 
+    return () => clearTimeout(delayDebounceFn);
+  }, [statusFilter, searchTerm]);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    fetchCourts();
-  };
-
-
+  // Hàm xử lý Bật/Tắt trạng thái hoạt động của sân
   const handleToggleActive = async (court) => {
+    // Chặn ngay từ FE nếu sân chưa được duyệt
+    if (court.status !== "approved") {
+      alert("Chỉ có thể bật/tắt sân đã được duyệt");
+      return;
+    }
+
     try {
       setActionLoading(court.id);
       const res = await axiosClient.put(`/admin/courts/${court.id}/toggle-active`);
+
+      const newActiveStatus = res.data.data ? res.data.data.is_active : !court.is_active;
+
       setCourts((prev) =>
-        prev.map((c) =>
-          c.id === court.id ? { ...c, is_active: !c.is_active } : c
-        )
+        prev.map((c) => (c.id === court.id ? { ...c, is_active: newActiveStatus } : c))
       );
+
       if (selectedCourt && selectedCourt.id === court.id) {
-        setSelectedCourt((prev) => ({ ...prev, is_active: !prev.is_active }));
+        setSelectedCourt((prev) => ({ ...prev, is_active: newActiveStatus }));
       }
+
       alert(res.data.message || "Cập nhật trạng thái hoạt động thành công!");
     } catch (err) {
       console.error("Error toggling active status:", err);
-      alert(err.response?.data?.message || "Lỗi khi cập nhật trạng thái hoạt động!");
+
+      // Đọc thông báo ValidationException từ Laravel Backend gửi về
+      let errorMsg = "Lỗi khi cập nhật trạng thái hoạt động!";
+      if (err.response?.data?.errors) {
+        const errorEntries = Object.values(err.response.data.errors);
+        if (errorEntries.length > 0 && errorEntries[0].length > 0) {
+          errorMsg = errorEntries[0][0]; 
+        }
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
+
+      alert(errorMsg);
     } finally {
       setActionLoading(null);
     }
   };
 
-
   const handleApprove = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn duyệt sân này không?")) return;
-
 
     try {
       setActionLoading(id);
@@ -125,13 +138,11 @@ function Venues() {
     }
   };
 
-
   const handleRejectClick = (court) => {
     setSelectedCourt(court);
     setRejectReason("");
     setShowRejectModal(true);
   };
-
 
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) {
@@ -139,13 +150,11 @@ function Venues() {
       return;
     }
 
-
     try {
       setActionLoading(selectedCourt.id);
       const res = await axiosClient.put(`/admin/courts/${selectedCourt.id}/reject`, {
         reason: rejectReason,
       });
-
 
       setCourts((prev) =>
         prev.map((c) =>
@@ -169,10 +178,8 @@ function Venues() {
     }
   };
 
-
   const handleViewDetail = async (court) => {
     try {
-      // Get detailed court (includes sub-fields and prices)
       const res = await axiosClient.get(`/admin/courts/${court.id}`);
       setSelectedCourt(res.data.data);
     } catch (err) {
@@ -180,7 +187,6 @@ function Venues() {
       setSelectedCourt(court);
     }
   };
-
 
   return (
     <AdminLayout>
@@ -191,16 +197,15 @@ function Venues() {
             <h2 className="fw-bold text-gray-800">Quản lý địa điểm</h2>
             <p className="text-muted">Xem, phê duyệt, từ chối và quản lý trạng thái hoạt động các sân thể thao</p>
           </div>
-          <button onClick={fetchCourts} className="btn btn-outline-primary">
-            Làm mới
+          <button onClick={fetchCourts} className="btn btn-outline-primary rounded-pill px-4">
+            Làm mới dữ liệu
           </button>
         </div>
 
-
         {/* Filters */}
         <div className="card shadow-sm border-0 p-3 mb-4 bg-white rounded-4">
-          <form onSubmit={handleSearchSubmit} className="row g-3 align-items-center">
-            <div className="col-md-5">
+          <div className="row g-3 align-items-center">
+            <div className="col-md-6">
               <div className="input-group">
                 <span className="input-group-text bg-light border-0 py-2.5">
                   <FaSearch className="text-muted" />
@@ -208,13 +213,12 @@ function Venues() {
                 <input
                   type="text"
                   className="form-control bg-light border-0 py-2.5"
-                  placeholder="Tìm theo tên sân..."
+                  placeholder="Tìm kiếm nhanh theo tên sân..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
-
 
             <div className="col-md-3">
               <select
@@ -229,22 +233,13 @@ function Venues() {
               </select>
             </div>
 
-
-            <div className="col-md-2">
-              <button type="submit" className="btn btn-primary w-100 py-2 rounded-pill fw-bold">
-                Tìm kiếm
-              </button>
-            </div>
-
-
-            <div className="col-md-2 text-end">
-              <span className="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-bold">
+            <div className="col-md-3 text-end">
+              <span className="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold fs-6">
                 Tìm thấy: {courts.length} sân
               </span>
             </div>
-          </form>
+          </div>
         </div>
-
 
         {/* Courts Table */}
         <div className="card shadow-sm border-0 bg-white rounded-4 overflow-hidden">
@@ -312,12 +307,18 @@ function Venues() {
                           )}
                         </td>
                         <td className="py-3 text-center">
+                          {/* Khóa nút bật tắt nếu chưa được approved */}
                           <button
                             onClick={() => handleToggleActive(court)}
-                            disabled={actionLoading === court.id}
+                            disabled={actionLoading === court.id || court.status !== "approved"}
                             className={`btn btn-sm py-1.5 px-3 rounded-pill fw-bold ${
-                              court.is_active ? "btn-success text-white" : "btn-outline-danger"
+                              court.status !== "approved"
+                                ? "btn-light text-muted cursor-not-allowed"
+                                : court.is_active
+                                ? "btn-success text-white"
+                                : "btn-outline-danger"
                             }`}
+                            title={court.status !== "approved" ? "Chỉ có thể bật/tắt sân đã được duyệt" : ""}
                           >
                             {court.is_active ? "Hoạt động" : "Đã khóa"}
                           </button>
@@ -358,7 +359,6 @@ function Venues() {
           )}
         </div>
 
-
         {/* Detailed Modal Overlay */}
         {selectedCourt && !showRejectModal && (
           <div
@@ -385,7 +385,6 @@ function Venues() {
                       </p>
                     </div>
 
-
                     <div className="col-md-6">
                       <div className="bg-light p-3 rounded-4">
                         <h6 className="fw-bold text-dark mb-2">Thông tin chủ sân</h6>
@@ -397,7 +396,6 @@ function Venues() {
                         </p>
                       </div>
                     </div>
-
 
                     <div className="col-md-6">
                       <div className="bg-light p-3 rounded-4">
@@ -418,9 +416,7 @@ function Venues() {
                           <strong>Hoạt động:</strong>
                           <span
                             className={`badge ${
-                              selectedCourt.is_active
-                                ? "bg-success text-white"
-                                : "bg-secondary text-white"
+                              selectedCourt.is_active ? "bg-success text-white" : "bg-secondary text-white"
                             } fw-bold`}
                           >
                             {selectedCourt.is_active ? "Đang hoạt động" : "Ngừng hoạt động"}
@@ -429,14 +425,12 @@ function Venues() {
                       </div>
                     </div>
 
-
                     <div className="col-12">
                       <div className="border border-light p-3 rounded-4">
                         <h6 className="fw-bold text-dark mb-2">Mô tả chi tiết</h6>
                         <p className="text-muted mb-0">{selectedCourt.description || "Không có mô tả."}</p>
                       </div>
                     </div>
-
 
                     {selectedCourt.rejection_reason && (
                       <div className="col-12">
@@ -447,10 +441,11 @@ function Venues() {
                       </div>
                     )}
 
-
-                    {selectedCourt.fields && selectedCourt.fields.length > 0 ? (
-                      <div className="col-12">
-                        <h6 className="fw-bold text-dark mb-2">Danh sách sân con ({selectedCourt.fields.length})</h6>
+                    <div className="col-12">
+                      <h6 className="fw-bold text-dark mb-2">
+                        Danh sách sân con ({selectedCourt.fields?.length || 0})
+                      </h6>
+                      {selectedCourt.fields && selectedCourt.fields.length > 0 ? (
                         <div className="row g-2">
                           {selectedCourt.fields.map((field) => (
                             <div key={field.id} className="col-md-6">
@@ -460,17 +455,14 @@ function Venues() {
                             </div>
                           ))}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="col-12">
-                        <h6 className="fw-bold text-dark mb-2">Danh sách sân con (0)</h6>
+                      ) : (
                         <div className="alert alert-light border border-dashed rounded-3 p-3 text-center mb-0">
                           <p className="text-muted small mb-0">
                             Cụm sân này hiện tại chưa có sân con nào được cấu hình trong hệ thống.
                           </p>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer border-0 p-3">
@@ -505,7 +497,6 @@ function Venues() {
           </div>
         )}
 
-
         {/* Rejection modal with reason */}
         {showRejectModal && (
           <div
@@ -525,7 +516,7 @@ function Venues() {
                 </div>
                 <div className="modal-body p-4">
                   <p className="text-muted mb-3">
-                    Vui lòng nhập lý do từ chối duyệt sân <strong>{selectedCourt?.name}</strong>. Chủ sân sẽ nhận được thông báo kèm lý do này.
+                    Vui lòng nhập lý do từ chối duyệt sân <strong>{selectedCourt?.name}</strong>.
                   </p>
                   <textarea
                     className="form-control rounded-3"
@@ -561,8 +552,4 @@ function Venues() {
   );
 }
 
-
 export default Venues;
-
-
-
