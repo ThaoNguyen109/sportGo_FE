@@ -2,6 +2,7 @@ import axios from "axios";
 
 const axiosClient = axios.create({
   baseURL: "https://sportgo.ddnsfree.com/api",
+  // baseURL: "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
