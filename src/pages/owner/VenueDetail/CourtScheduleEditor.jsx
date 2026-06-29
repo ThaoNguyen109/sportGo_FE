@@ -293,7 +293,7 @@ export default function CourtScheduleEditor({
                                 background: "#f1f5f9 !important",
                                 boxShadow: "none",
                             },
-                        }}
+                          }}
                           onClick={() =>
                             removeSlot(
                               day,
