@@ -50,6 +50,18 @@ const Dashboard = () => {
     (item.address && item.address.toLowerCase().includes(keyword.toLowerCase()))
   );
 
+  const getImageUrl = (url) => {
+    if (!url) return "https://picsum.photos/400/200/?text=SportGo";
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    const cleanPath = url.startsWith("/") ? url.slice(1) : url;
+    if (cleanPath.startsWith("storage/")) {
+      return `https://sportgo.ddnsfree.com/${cleanPath}`;
+    }
+    return `https://sportgo.ddnsfree.com/storage/${cleanPath}`;
+  };
+
   return (
     <MainLayout>
       {/* 🔍 SEARCH */}
@@ -88,7 +100,7 @@ const Dashboard = () => {
                 id={item.id}
                 name={item.name}
                 location={item.address}
-                image={item.image}
+                image={getImageUrl(item.image)}
                 distance={item.distance_km ? `${item.distance_km.toFixed(1)}km` : ""}
                 time={`${item.open_time ? item.open_time.slice(0,5) : "00:00"} - ${item.close_time ? item.close_time.slice(0,5) : "24:00"}`}
               />
