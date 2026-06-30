@@ -28,7 +28,23 @@ function RefundPage() {
         }
       } catch (err) {
         console.error("Fetch refund detail error:", err);
-        setError(err?.response?.data?.message || "Đã có lỗi xảy ra khi tải thông tin.");
+        
+        // --- CẢI TIẾN TẠI ĐÂY: Kiểm tra linh hoạt cả object error lẫn chuỗi lỗi từ Interceptor ---
+        const errorMsg = err?.response?.data?.message || err?.message || String(err);
+        const statusCode = err?.response?.status;
+
+        if (
+          statusCode === 404 || 
+          errorMsg.includes("404") || 
+          errorMsg.toLowerCase().includes("not found") ||
+          errorMsg.includes("Lỗi server") // Đánh chặn nếu Interceptor đổi thành chữ này
+        ) {
+          setError("Khách hàng chưa nhập thông tin hoàn tiền.");
+        } else {
+          setError(errorMsg || "Đã có lỗi xảy ra khi tải thông tin.");
+        }
+        // ----------------------------------------------------------------------------------
+
       } finally {
         setPageLoading(false);
       }
@@ -48,19 +64,17 @@ function RefundPage() {
 
       const res = await axiosClient.post(`/admin/bookings/${bookingId}/refund`);
 
-      // Kiểm tra phản hồi dựa vào cấu trúc API thông thường của bạn
       if (res.data) {
         setMessage(res.data?.message || "Xác nhận hoàn tiền thành công!");
-        // Cập nhật lại trạng thái local để giao diện thay đổi theo
         setRefundData((prev) => ({
           ...prev,
-          status: "success", // hoặc trạng thái tương ứng sau khi xử lý thành công
+          status: "success",
           booking: { ...prev.booking, status: "refunded" }
         }));
       }
     } catch (err) {
       console.error("Refund submit error:", err);
-      setError(err?.response?.data?.message || "Đã có lỗi khi thực hiện xử lý hoàn tiền.");
+      setError(err?.response?.data?.message || err?.message || "Đã có lỗi khi thực hiện xử lý hoàn tiền.");
     } finally {
       setActionLoading(false);
     }

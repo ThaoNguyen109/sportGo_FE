@@ -42,7 +42,7 @@ const VenueInfoSection = ({
 
       if (selectedVenue.image) {
         setPreviewImage(
-          `http://localhost:8000/storage/${selectedVenue.image}`
+          `https://sportgo.ddnsfree.com/storage/${selectedVenue.image}`
         );
       } else {
         setPreviewImage(null);
