@@ -246,14 +246,14 @@ const VenueImagesSection = ({
           console.log("image =", image);
           console.log(
             "url =",
-            `http://localhost:8000/storage/${image.image_url}`
+            `https://sportgo.ddnsfree.com/storage/${image.image_url}`
           );
 
           return (
             <Box key={index} sx={{ position: "relative" }}>
               <Box
                 component="img"
-                src={`http://localhost:8000/storage/${image.image_url}`}
+                src={`https://sportgo.ddnsfree.com/storage/${image.image_url}`}
                 alt={`image-${image.id}`}
                 sx={{
                   width: "100%",
