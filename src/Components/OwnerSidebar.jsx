@@ -534,35 +534,46 @@ const OwnerSidebar = () => {
                       "Sân 1"
                     );
 
-                    const days = [1, 2, 3, 4, 5, 6, 7];
+                    // Thay thế đoạn chạy cấu trúc giá cũ bằng logic lặp từng giờ dưới đây:
+const days = [1, 2, 3, 4, 5, 6, 7];
+let priceIndex = 0; // Biến đếm index chung cho toàn bộ các hàng giá gửi lên
 
-                    days.forEach((day, index) => {
+days.forEach((day) => {
+  // Chạy vòng lặp từ 6h sáng đến 22h đêm (mỗi vòng tăng 1 giờ)
+  for (let hour = 6; hour < 23; hour++) {
+    // Định dạng giờ bắt đầu và kết thúc (VD: 06:00:00 và 07:00:00)
+    const startTime = `${String(hour).padStart(2, "0")}:00:00`;
+    const endTime = `${String(hour + 1).padStart(2, "0")}:00:00`;
 
-                      formData.append(
-                        `fields[0][prices][${index}][start_time]`,
-                        "06:00:00"
-                      );
+    formData.append(
+      `fields[0][prices][${priceIndex}][start_time]`,
+      startTime
+    );
 
-                      formData.append(
-                        `fields[0][prices][${index}][end_time]`,
-                        "23:00:00"
-                      );
+    formData.append(
+      `fields[0][prices][${priceIndex}][end_time]`,
+      endTime
+    );
 
-                      formData.append(
-                        `fields[0][prices][${index}][price]`,
-                        100000
-                      );
+    formData.append(
+      `fields[0][prices][${priceIndex}][price]`,
+      100000 // Bạn có thể tùy biến giá theo khung giờ tại đây nếu cần
+    );
 
-                      formData.append(
-                        `fields[0][prices][${index}][day_of_week]`,
-                        day
-                      );
+    formData.append(
+      `fields[0][prices][${priceIndex}][day_of_week]`,
+      day
+    );
 
-                      formData.append(
-                        `fields[0][prices][${index}][is_active]`,
-                        1
-                      );
-                    });
+    formData.append(
+      `fields[0][prices][${priceIndex}][is_active]`,
+      1
+    );
+
+    // Tăng index lên 1 để chuẩn bị cho hàng tiếp theo trong DB
+    priceIndex++;
+  }
+});
 
                     const res = await axiosClient.post(
                       "/owner/courts",
