@@ -8,49 +8,40 @@ import VenueServicesSection from "./VenueServicesSection";
 import VenueImagesSection from "./VenueImagesSection";
 import VenueCourtsSection from "./VenueCourtsSection";
 
+import { useEffect } from "react";
+import axiosClient from "../../../api/axiosClient";
+
 const VenueDetail = () => {
   const { id } = useParams();
   const venueId = Number(id) || 103;
 
-  const venueDetails = {
-    103: {
-      name: "Sân cầu lông Cảnh Hồ",
-      address: "138B Trường Chinh, Khương Mai, Thanh Xuân, Hà Nội",
-      bankName: "MBBank",
-      bankAccount: "0984292224",
-      services: ["Cho thuê sân", "Thuê huấn luyện viên", "Bóng thi đấu"],
-      images: [
-        { alt: "Sân cầu lông Cảnh Hồ 1", src: "https://picsum.photos/400/200/?1text=Cảnh+Hồ+1" },
-        { alt: "Sân cầu lông Cảnh Hồ 2", src: "https://picsum.photos/400/200/?2text=Cảnh+Hồ+2" },
-        { alt: "Sân cầu lông Cảnh Hồ 3", src: "https://picsum.photos/400/200/?3text=Cảnh+Hồ+3" },
-      ],
-    },
-    104: {
-      name: "Đức Thảo",
-      address: "18 Tam Trinh, Mai Động, Hoàng Mai, Hà Nội",
-      bankName: "Vietcombank",
-      bankAccount: "0123456789",
-      services: ["Cho thuê sân", "Tổ chức giải đấu", "Thuê đồ thể thao"],
-      images: [
-        { alt: "Đức Thảo 1", src: "https://picsum.photos/400/200/?4text=Đức+Thảo+1" },
-        { alt: "Đức Thảo 2", src: "https://picsum.photos/400/200/?5text=Đức+Thảo+2" },
-      ],
-    },
-    105: {
-      name: "DINKZONE",
-      address: "12 Nguyễn Trãi, Thanh Xuân, Hà Nội",
-      bankName: "Techcombank",
-      bankAccount: "0987612345",
-      services: ["Cho thuê sân", "Sân tập", "Tổ chức sự kiện"],
-      images: [
-        { alt: "DINKZONE 1", src: "https://picsum.photos/400/200/?6text=DINKZONE+1" },
-        { alt: "DINKZONE 2", src: "https://picsum.photos/400/200/?7text=DINKZONE+2" },
-        { alt: "DINKZONE 3", src: "https://picsum.photos/400/200/?8text=DINKZONE+3" },
-      ],
-    },
-  };
+  
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchVenueDetail = async () => {
+      try {
+        setLoading(true);
 
-  const selectedVenue = venueDetails[venueId] || venueDetails[103];
+        const res = await axiosClient.get(
+          `/owner/courts/${venueId}`
+        );
+
+        console.log("Chi tiết cụm sân:", res.data);
+
+        setSelectedVenue(res.data.data);
+
+      } catch (error) {
+        console.log("Lỗi lấy chi tiết sân:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenueDetail();
+  }, [venueId]);
+
 
   const [activeTab, setActiveTab] = useState("Thông tin chung");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -73,6 +64,55 @@ const VenueDetail = () => {
     T7: "06:00-22:00",
     CN: "08:00-20:00",
   });
+
+  const defaultSchedules = {
+    "Thứ 2": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 3": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 4": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 5": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 6": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Thứ 7": [
+      {
+        hours: "06:00-22:00",
+        price: "200k",
+      },
+    ],
+    "Chủ nhật": [
+      {
+        hours: "08:00-20:00",
+        price: "250k",
+      },
+    ],
+  };
+
+  const [newCourtSchedules, setNewCourtSchedules] =
+      useState(defaultSchedules);
+
   const [editCourtIndex, setEditCourtIndex] = useState(null);
   const [editCourtName, setEditCourtName] = useState("");
   const [editCourtActive, setEditCourtActive] = useState(true);
@@ -94,127 +134,41 @@ const VenueDetail = () => {
     T7: "06:00-22:00",
     CN: "08:00-20:00",
   });
+
+  const [editSchedules, setEditSchedules] =
+    useState(defaultSchedules);
+
   const addCourtRef = useRef(null);
 
   const [showAddService, setShowAddService] = useState(false);
   const [newService, setNewService] = useState("");
-  const [services, setServices] = useState(selectedVenue.services);
+  const [services, setServices] = useState([]);
 
-  const [images, setImages] = useState(selectedVenue.images);
+  const [images, setImages] = useState([]);
   const [coverImage, setCoverImage] = useState(null);
 
-  const [courts, setCourts] = useState([
-    {
-      name: "Sân 1",
-      active: true,
-      priceByDay: {
-        T2: "200k",
-        T3: "200k",
-        T4: "200k",
-        T5: "200k",
-        T6: "200k",
-        T7: "220k",
-        CN: "250k",
-      },
-      operatingHours: {
-        T2: "06:00-22:00",
-        T3: "06:00-22:00",
-        T4: "06:00-22:00",
-        T5: "06:00-22:00",
-        T6: "06:00-22:00",
-        T7: "06:00-22:00",
-        CN: "08:00-20:00",
-      },
-    },
-    {
-      name: "Sân 2",
-      active: true,
-      priceByDay: {
-        T2: "200k",
-        T3: "200k",
-        T4: "200k",
-        T5: "200k",
-        T6: "200k",
-        T7: "220k",
-        CN: "250k",
-      },
-      operatingHours: {
-        T2: "06:00-22:00",
-        T3: "06:00-22:00",
-        T4: "06:00-22:00",
-        T5: "06:00-22:00",
-        T6: "06:00-22:00",
-        T7: "06:00-22:00",
-        CN: "08:00-20:00",
-      },
-    },
-    {
-      name: "Sân 3",
-      active: true,
-      priceByDay: {
-        T2: "200k",
-        T3: "200k",
-        T4: "200k",
-        T5: "200k",
-        T6: "200k",
-        T7: "220k",
-        CN: "250k",
-      },
-      operatingHours: {
-        T2: "06:00-22:00",
-        T3: "06:00-22:00",
-        T4: "06:00-22:00",
-        T5: "06:00-22:00",
-        T6: "06:00-22:00",
-        T7: "06:00-22:00",
-        CN: "08:00-20:00",
-      },
-    },
-    {
-      name: "Sân 4",
-      active: true,
-      priceByDay: {
-        T2: "200k",
-        T3: "200k",
-        T4: "200k",
-        T5: "200k",
-        T6: "200k",
-        T7: "220k",
-        CN: "250k",
-      },
-      operatingHours: {
-        T2: "06:00-22:00",
-        T3: "06:00-22:00",
-        T4: "06:00-22:00",
-        T5: "06:00-22:00",
-        T6: "06:00-22:00",
-        T7: "06:00-22:00",
-        CN: "08:00-20:00",
-      },
-    },
-    {
-      name: "Sân 5",
-      active: true,
-      priceByDay: {
-        T2: "200k",
-        T3: "200k",
-        T4: "200k",
-        T5: "200k",
-        T6: "200k",
-        T7: "220k",
-        CN: "250k",
-      },
-      operatingHours: {
-        T2: "06:00-22:00",
-        T3: "06:00-22:00",
-        T4: "06:00-22:00",
-        T5: "06:00-22:00",
-        T6: "06:00-22:00",
-        T7: "06:00-22:00",
-        CN: "08:00-20:00",
-      },
-    },
-  ]);
+  const [courts, setCourts] = useState([]);
+
+  useEffect(() => {
+    if (selectedVenue) {
+
+      setServices(selectedVenue.services || []);
+
+      setImages(selectedVenue.images || []);
+
+      setCoverImage(selectedVenue.image || null);
+
+      setCourts(selectedVenue.fields || []);
+    }
+  }, [selectedVenue]);
+
+  if (loading || !selectedVenue) {
+    return (
+      <OwnerLayout>
+        <Typography>Đang tải dữ liệu...</Typography>
+      </OwnerLayout>
+    );
+  }
 
   return (
     <OwnerLayout>
@@ -276,7 +230,7 @@ const VenueDetail = () => {
           mb: 3,
         }}
       >
-        {["Thông tin chung", "Dịch vụ", "Hình ảnh", "Sân"].map(
+        {["Thông tin chung", "Hình ảnh", "Sân"].map(
           (tab) => (
             <Box
               key={tab}
@@ -297,19 +251,14 @@ const VenueDetail = () => {
         )}
       </Box>
 
-      {activeTab === "Thông tin chung" && <VenueInfoSection selectedVenue={selectedVenue} />}
-      {activeTab === "Dịch vụ" && (
-        <VenueServicesSection
-          services={services}
-          setServices={setServices}
-          showAddService={showAddService}
-          setShowAddService={setShowAddService}
-          newService={newService}
-          setNewService={setNewService}
-        />
-      )}
+      {activeTab === "Thông tin chung" && (
+        <VenueInfoSection 
+          selectedVenue={selectedVenue}
+          setSelectedVenue={setSelectedVenue} />)}
+      
       {activeTab === "Hình ảnh" && (
         <VenueImagesSection
+          venueId={venueId}
           coverImage={coverImage}
           setCoverImage={setCoverImage}
           images={images}
@@ -318,6 +267,7 @@ const VenueDetail = () => {
       )}
       {activeTab === "Sân" && (
         <VenueCourtsSection
+          venueId={venueId}
           courts={courts}
           setCourts={setCourts}
           showAddForm={showAddForm}
@@ -339,6 +289,10 @@ const VenueDetail = () => {
           editCourtHours={editCourtHours}
           setEditCourtHours={setEditCourtHours}
           addCourtRef={addCourtRef}
+          newCourtSchedules={newCourtSchedules}
+          setNewCourtSchedules={setNewCourtSchedules}
+          editSchedules={editSchedules}
+          setEditSchedules={setEditSchedules}
         />
       )}
 

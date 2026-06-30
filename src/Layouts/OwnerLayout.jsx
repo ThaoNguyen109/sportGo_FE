@@ -19,6 +19,7 @@ const OwnerLayout = ({ children }) => {
           background: "#f1f5f9",
           display: "flex",
           flexDirection: "column",
+          minWidth: 0,
         }}
       >
         {/* HEADER */}

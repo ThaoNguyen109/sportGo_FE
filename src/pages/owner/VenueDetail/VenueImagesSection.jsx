@@ -1,34 +1,147 @@
-import { useRef } from "react";
+
 import { Box, Typography, Button, IconButton } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
 
+import { useEffect, useRef } from "react";
+import axiosClient from "../../../api/axiosClient";
+
 const VenueImagesSection = ({
+  venueId,
   coverImage,
   setCoverImage,
   images,
   setImages,
 }) => {
+
+  console.log("venueId =", venueId);
   const coverInputRef = useRef(null);
   const imageInputRef = useRef(null);
 
-  const handleCoverUpload = (event) => {
+  const handleCoverUpload = async (event) => {
+
     const file = event.target.files?.[0];
-    if (file) {
-      setCoverImage(URL.createObjectURL(file));
+
+    if (!file) return;
+
+    try {
+
+      const formData = new FormData();
+
+      formData.append("image", file);
+
+      const res = await axiosClient.post(
+        `/owner/courts/${venueId}/images`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(res.data);
+
+      await fetchImages();
+
+    } catch (error) {
+
+      console.log(error.response?.data);
+
+      alert("Upload ảnh thất bại");
+
     }
+
     event.target.value = "";
   };
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = async (event) => {
+
     const file = event.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setImages((prev) => [
-        ...prev,
-        { src: imageUrl, alt: file.name },
-      ]);
+
+    if (!file) return;
+
+    try {
+
+      const formData = new FormData();
+
+      formData.append("image", file);
+
+      const res = await axiosClient.post(
+        `/owner/courts/${venueId}/images`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(res.data);
+
+      await fetchImages();
+
+    } catch (error) {
+
+      console.log(error.response?.data);
+
+      alert("Upload ảnh thất bại");
+
     }
+
     event.target.value = "";
+  };
+
+  useEffect(() => {
+
+    fetchImages();
+
+  }, [venueId]);
+
+  const fetchImages = async () => {
+
+    try {
+
+      const res = await axiosClient.get(
+        `/owner/courts/${venueId}`
+      );
+
+      const venueData = res.data.data;
+
+      if (venueData.image) {
+        setCoverImage(
+          `http://localhost:8000/storage/${venueData.image}`
+        );
+      } else {
+        setCoverImage(null);
+      }
+
+      // Danh sách ảnh phụ
+      setImages(venueData.images || []);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+
+    try {
+
+      await axiosClient.delete(
+        `/owner/courts/${venueId}/images/${imageId}`
+      );
+
+      await fetchImages();
+
+    } catch (error) {
+
+      console.log(error.response?.data);
+
+      alert("Xóa ảnh thất bại");
+
+    }
   };
 
   return (
@@ -57,7 +170,7 @@ const VenueImagesSection = ({
         </Button>
       </Box>
 
-      <Box
+      {/* <Box
         sx={{
           mb: 3,
           borderRadius: 2,
@@ -82,6 +195,8 @@ const VenueImagesSection = ({
           Ảnh bìa
         </Typography>
         <Box>
+
+          
           <Button
             variant="contained"
             onClick={() => coverInputRef.current?.click()}
@@ -104,6 +219,9 @@ const VenueImagesSection = ({
           ref={coverInputRef}
           onChange={handleCoverUpload}
         />
+        */}
+
+
         <input
           type="file"
           accept="image/*"
@@ -111,9 +229,6 @@ const VenueImagesSection = ({
           ref={imageInputRef}
           onChange={handleImageUpload}
         />
-      </Box>
-
-
       <Box
         sx={{
           border: "1px solid #e2e8f0",
@@ -126,31 +241,48 @@ const VenueImagesSection = ({
 
         
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2 }}>
-        {images.map((image, index) => (
-          <Box key={index} sx={{ position: "relative" }}>
-            <Box
-              component="img"
-              src={image.src}
-              alt={image.alt}
-              sx={{ width: "100%", borderRadius: 2, objectFit: "cover", minHeight: 180 }}
-            />
-            <IconButton
-              size="small"
-              color="error"
-              onClick={() => setImages((prev) => prev.filter((_, i) => i !== index))}
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                background: "rgba(255, 255, 255, 0.9)",
-                color: "#dc2626",
-                "&:hover": { background: "rgba(255, 255, 255, 1)" },
-              }}
-            >
-              <Delete fontSize="small" />
-            </IconButton>
-          </Box>
-        ))}
+        {images.map((image, index) => {
+
+          console.log("image =", image);
+          console.log(
+            "url =",
+            `http://localhost:8000/storage/${image.image_url}`
+          );
+
+          return (
+            <Box key={index} sx={{ position: "relative" }}>
+              <Box
+                component="img"
+                src={`http://localhost:8000/storage/${image.image_url}`}
+                alt={`image-${image.id}`}
+                sx={{
+                  width: "100%",
+                  borderRadius: 2,
+                  objectFit: "cover",
+                  minHeight: 180
+                }}
+              />
+
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => handleDeleteImage(image.id)}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: "rgba(255, 255, 255, 0.9)",
+                  color: "#dc2626",
+                  "&:hover": {
+                    background: "rgba(255, 255, 255, 1)"
+                  },
+                }}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </Box>
+          );
+        })}
       </Box>
 
       </Box>

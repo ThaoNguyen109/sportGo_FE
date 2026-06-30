@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "https://sportgo.ddnsfree.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://sportgo.ddnsfree.com/api",
   // baseURL: "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
@@ -22,16 +22,15 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🔥 Response interceptor (QUAN TRỌNG)
+// 🔥 Response interceptor
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Nếu token hết hạn hoặc sai
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("user");
-      window.location.href = "/login"; // redirect về login
+      window.location.href = "/login";
     }
 
     return Promise.reject(error);

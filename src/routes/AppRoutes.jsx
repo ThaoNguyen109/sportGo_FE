@@ -9,6 +9,7 @@ import Users from "../pages/admin/Users";
 import Sports from "../pages/admin/Sports";
 import Venues from "../pages/admin/Venues";
 import Payments from "../pages/admin/Payments";
+import PayoutManagement from "../pages/admin/PayoutManagement";
 
 function AppRoutes() {
 
@@ -19,6 +20,11 @@ function AppRoutes() {
 
         <Route
           path="/"
+          element={<Dashboard />}
+        />
+
+        <Route
+          path="/admin"
           element={<Dashboard />}
         />
 
@@ -40,6 +46,18 @@ function AppRoutes() {
         <Route
           path="/admin/payments"
           element={<Payments />}
+        />
+        <Route
+          path="/admin/payouts"
+          element={<PayoutManagement />}
+        />
+        <Route
+          path="/admin/payouts/pending/:ownerId"
+          element={<PayoutDetail />}
+        />
+        <Route
+          path="/admin/payout-history"
+          element={<PayoutDetail />}
         />
 
       </Routes>
