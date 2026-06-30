@@ -42,13 +42,12 @@ export default function BookingHistory() {
             case "pending":
                 return { text: "Chờ thanh toán", className: "status pending" };
             case "cancelled":
-                return { text: "Đã hủy", className: "status cancel" };
-            case "failed":
-                return { text: "Thất bại", className: "status cancel" };
-            case "refunding":
+                // cancelled = user đã gửi yêu cầu hủy & hoàn tiền, admin đang xử lý
                 return { text: "Đang hoàn tiền", className: "status pending" };
             case "refunded":
                 return { text: "Đã hoàn tiền", className: "status cancel" };
+            case "failed":
+                return { text: "Thất bại", className: "status cancel" };
             default:
                 return { text: status, className: "status" };
         }
@@ -69,13 +68,13 @@ export default function BookingHistory() {
     const filteredBookings = bookingList
         .filter((item) => {
             // Lọc theo từ khóa (tên cụm sân hoặc mã đơn)
-            const matchesSearch = 
-                item.court_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            const matchesSearch =
+                item.court_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 String(item.id).includes(searchTerm);
-            
+
             // Lọc theo trạng thái
-            const matchesStatus = 
-                statusFilter === "all" || 
+            const matchesStatus =
+                statusFilter === "all" ||
                 (statusFilter === "paid" && item.status === "paid") ||
                 (statusFilter === "cancelled" && (item.status === "cancelled" || item.status === "failed")) ||
                 (statusFilter === "pending" && item.status === "pending");
@@ -101,12 +100,12 @@ export default function BookingHistory() {
                 </div>
 
                 <div className="history-filter">
-                    <input 
-                        placeholder="🔍 Tìm kiếm theo tên sân, mã đơn..." 
+                    <input
+                        placeholder="🔍 Tìm kiếm theo tên sân, mã đơn..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <select 
+                    <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
@@ -115,8 +114,8 @@ export default function BookingHistory() {
                         <option value="pending">Chờ thanh toán</option>
                         <option value="cancelled">Đã hủy / thất bại</option>
                     </select>
-                    <input 
-                        type="date" 
+                    <input
+                        type="date"
                         value={dateFilter}
                         onChange={(e) => setDateFilter(e.target.value)}
                     />
@@ -170,7 +169,7 @@ export default function BookingHistory() {
                                             {item.status === "paid" && (
                                                 <>
                                                     <button className="review-btn">☆ Đánh giá</button>
-                                                    <button 
+                                                    <button
                                                         className="cancel-btn-history"
                                                         onClick={() => navigate("/booking/refund", { state: item })}
                                                         style={{

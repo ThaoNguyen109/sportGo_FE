@@ -36,6 +36,7 @@ const PaymentConfirmPage = () => {
             setSeconds((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
+                    handleCancelBooking();
                     return 0;
                 }
                 return prev - 1;
@@ -94,6 +95,23 @@ const PaymentConfirmPage = () => {
             console.warn("Không tìm thấy booking.bookingId trong state! API hủy sẽ không được gọi.");
         }
 
+        navigate("/dashboard");
+    };
+
+    const handleConfirmBooking = async () => {
+        if (paymentStatus === "success") {
+            navigate("/dashboard");
+            return;
+        }
+
+        if (booking.bookingId) {
+            try {
+                await axiosClient.post(`/bookings/${booking.bookingId}/confirm`);
+                console.log(`Đã xác nhận đơn đặt sân #${booking.bookingId} thành công.`);
+            } catch (error) {
+                console.error("Lỗi khi xác nhận đơn đặt sân:", error);
+            }
+        }
         navigate("/dashboard");
     };
 
@@ -177,7 +195,7 @@ const PaymentConfirmPage = () => {
 
                                 <button 
                                     className="confirm-payment"
-                                    onClick={() => navigate("/dashboard")}
+                                    onClick={handleConfirmBooking}
                                     style={paymentStatus === "success" ? { background: "#4caf50", color: "white" } : {}}
                                 >
                                     {paymentStatus === "success" ? "VỀ TRANG CHỦ" : "XÁC NHẬN ĐẶT SÂN"}
